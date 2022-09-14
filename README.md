@@ -13,7 +13,7 @@ and much more.
 
 # Installation
 ```bash
-npm i etcher -g
+npm i @etcher/core -g
 ```
 
 # Usage

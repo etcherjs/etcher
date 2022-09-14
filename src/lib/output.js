@@ -47,20 +47,16 @@ export const migratePages = async () => {
     const pages = await fs.promises.readdir(path.join(config.srcDir, "pages"));
 
     for (const page of pages) {
-        if (page.endsWith(".html")) {
-            console.log(chalk.cyanBright(`Migrating ${page}...`));
+        console.log(chalk.cyanBright(`Migrating ${page}...`));
 
-            let pageData = await fs.promises.readFile(path.join(config.srcDir, "pages", page), "utf8");
+        let pageData = await fs.promises.readFile(path.join(config.srcDir, "pages", page), "utf8");
 
-            // meh... it's a replacement for a DOMParser but it can be improved
-            pageData = pageData.replace("</body>", `<script src="/_chisel.js"></script></body>`);
+        // meh... it's a replacement for a DOMParser but it can be improved
+        pageData = pageData.replace("</body>", `<script src="/_chisel.js"></script></body>`);
 
-            await fs.promises.writeFile(path.join(config.outDir, page), pageData);
+        await fs.promises.writeFile(path.join(config.outDir, page), pageData);
 
-            console.log(chalk.greenBright(`Migrated ${page}!`));
-        } else {
-            console.log(chalk.yellow(`Skipping ${page} as it is not an HTML file.`));
-        }
+        console.log(chalk.greenBright(`Migrated ${page}!`));
     }
 
     console.log("");

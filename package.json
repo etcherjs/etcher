@@ -1,6 +1,6 @@
 {
     "name": "@etcher/core",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A blazingly fast frontend 'framework' to create reusable web components without touching a single line of javascript.",
     "author": "TheCommieAxolotl",
     "license": "MIT",

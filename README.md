@@ -28,11 +28,13 @@ To use etcher, you need to follow this directory structure:
 
 (You can configure these directories in the `etcher.config.js` file.)
 
-To generate chisel (etcher's output js file), run:
+To generate chisel, run:
 ```bash
 etcher -b # build
 etcher -w # watch
 ```
+
+This will move all your pages into your `public` directory, and generate a `_chisel.js` file, which is the output of etcher.
 
 # Configuration
 You can configure etcher by creating a `etcher.config.js` file in the root directory of your project. Here's an example:

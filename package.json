@@ -12,5 +12,11 @@
         "chalk": "^5.0.1",
         "terser": "^5.15.0"
     },
-    "main": "src/lib/index.js"
+    "main": "src/lib/index.js",
+    "keywords": [
+        "etcher",
+        "framework",
+        "web-components",
+        "frontend"
+    ]
 }

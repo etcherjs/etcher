@@ -47,36 +47,17 @@ export default {
 
 # Example
 ```html
-<!-- src/index.html -->
+<!-- src/pages/index.html -->
 <html>
-  <head>
-    <link rel="stylesheet" href="main.css">
-  </head>
   <body>
     <button-component></button-component>
-    <script src="main.js"></script>
   </body>
 </html>
 ```
 
 ```html
-<!-- src/components/button/button.html -->
+<!-- src/components/buttonComponent.html -->
 <button>Click me!</button>
-```
-
-```css
-/* src/components/button/button.css */
-button {
-  background: #000;
-  color: #fff;
-}
-```
-
-```js
-// src/main.js
-import { register } from 'etcher';
-
-register('button-component', 'button');
 ```
 
 # TODO

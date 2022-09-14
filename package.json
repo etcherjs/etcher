@@ -1,0 +1,16 @@
+{
+    "name": "@etcher/core",
+    "version": "1.0.0",
+    "description": "A blazingly fast frontend 'framework' to create reusable web components without touching a single line of javascript.",
+    "author": "TheCommieAxolotl",
+    "license": "MIT",
+    "bin": {
+        "etcher": "src/lib/index.js"
+    },
+    "type": "module",
+    "dependencies": {
+        "chalk": "^5.0.1",
+        "terser": "^5.15.0"
+    },
+    "main": "src/lib/index.js"
+}

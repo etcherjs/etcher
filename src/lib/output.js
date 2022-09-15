@@ -10,6 +10,12 @@ export const generateCoreFile = async () => {
 
     const config = await getConfig();
 
+    if (!fs.existsSync(config.srcDir)) {
+        console.log(chalk.red('Source directory does not exist! Aborting...'));
+
+        throw new Error('Source directory does not exist!');
+    }
+
     const componentFiles = await fs.promises.readdir(
         path.join(config.srcDir, 'components')
     );
@@ -85,6 +91,12 @@ let delay;
 let otherDelay;
 export const watch = async () => {
     const config = await getConfig();
+
+    if (!fs.existsSync(config.srcDir)) {
+        console.log(chalk.red('Source directory does not exist! Aborting...'));
+
+        throw new Error('Source directory does not exist!');
+    }
 
     fs.watch(path.join(config.srcDir, 'components'), async () => {
         if (delay) {

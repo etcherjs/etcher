@@ -4,14 +4,27 @@ import { generateCoreFile, migratePages, watch } from './output.js';
 
 switch (process.argv[2]) {
     case '-b':
-        generateCoreFile().then(() => {
-            migratePages();
-        });
+        generateCoreFile()
+            .catch(() => {
+                process.exit(1);
+            })
+            .then(() => {
+                migratePages();
+            });
         break;
     case '-w':
-        watch();
+        try {
+            watch();
+        } catch {
+            process.exit(1);
+        }
+
     default:
-        generateCoreFile().then(() => {
-            migratePages();
-        });
+        generateCoreFile()
+            .catch(() => {
+                process.exit(1);
+            })
+            .then(() => {
+                migratePages();
+            });
 }

@@ -7,6 +7,9 @@
     "bin": {
         "etcher": "src/lib/index.js"
     },
+    "scripts": {
+        "dev": "etcher -w"
+    },
     "type": "module",
     "dependencies": {
         "chalk": "^5.0.1",

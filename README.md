@@ -42,25 +42,25 @@ You can configure etcher by creating a `etcher.config.js` file in the root direc
 export default {
     srcDir: 'src',
     outDir: 'dist',
-    // more config options will be added soon
+    // more config options will be added soon:tm:
 }
 ```
-
 
 # Example
 ```html
 <!-- src/pages/index.html -->
 <html>
   <body>
-    <button-component></button-component>
+    <!-- our `label` attribute will be passed to the button file -->
+    <etcher-Button label="Click Me!"></etcher-Button>
   </body>
 </html>
 ```
 
 ```html
-<!-- src/components/buttonComponent.html -->
-<button>Click me!</button>
+<!-- src/components/Button.html -->
+<button>{{label}}</button>
 ```
 
 # TODO
-- [ ] Add support for props through attributes
+- [x] Add support for props through attributes

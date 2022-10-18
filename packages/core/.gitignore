@@ -1,0 +1,8 @@
+# local testing
+test/
+
+# dependencies
+node_modules/
+
+# macOS files
+.DS_Store

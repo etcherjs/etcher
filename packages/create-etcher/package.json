@@ -1,0 +1,23 @@
+{
+    "name": "create-etcher",
+    "version": "1.0.0",
+    "description": "Create an Etcher app",
+    "main": "index.js",
+    "type": "module",
+    "bin": {
+        "create-etcher": "index.js",
+        "cea": "index.js"
+    },
+    "dependencies": {
+        "kolorist": "^1.6.0",
+        "prompts": "^2.4.2"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/etcherjs/etcher.git"
+    },
+    "bugs": {
+        "url": "https://github.com/etcherjs/etcher/issues"
+    },
+    "homepage": "https://github.com/etcherjs/etcher#readme"
+}

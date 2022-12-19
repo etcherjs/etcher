@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "moduleResolution": "Node16",
+        "target": "ESNext",
+        "outDir": "out",
+        "esModuleInterop": true,
+        "lib": ["ESNext"],
+        "sourceMap": true,
+        "rootDir": "src",
+        "strict": true
+    }
+}

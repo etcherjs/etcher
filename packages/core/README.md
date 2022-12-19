@@ -11,6 +11,11 @@ Custom web elements have
 
 and much more.
 
+# VS Code Extension
+Etcher comes with a VS Code extension that allows you to access syntax highlighting, code completion, and more.
+
+[GitHub](https://github.com/etcherjs/etcher/tree/main/packages/vscode-etcher)
+
 # Installation
 ```bash
 npm i @etcher/core -g
@@ -21,9 +26,9 @@ To use etcher, you need to follow this directory structure:
 ```
 ├── src
 │   ├── components
-│   |   └── ...component html files
+│   |   └── ...component xtml files
 │   ├── pages
-│   |   └── ...page html files
+│   |   └── ...page xtml files
 ```
 
 (You can configure these directories in the `etcher.config.js` file.)
@@ -48,7 +53,7 @@ export default {
 
 # Example
 ```html
-<!-- src/pages/index.html -->
+<!-- src/pages/index.xtml -->
 <html>
   <body>
     <!-- our `label` attribute will be passed to the button file -->
@@ -58,7 +63,7 @@ export default {
 ```
 
 ```html
-<!-- src/components/Button.html -->
+<!-- src/components/Button.xtml -->
 <button>{{label}}</button>
 ```
 

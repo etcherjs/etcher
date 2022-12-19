@@ -6,3 +6,5 @@ node_modules/
 
 # macOS files
 .DS_Store
+
+**/.pnpm-debug.log

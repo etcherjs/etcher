@@ -1,5 +1,6 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
+import terser from '@rollup/plugin-terser';
 import { defineConfig } from 'rollup';
 
 export default defineConfig({
@@ -10,6 +11,7 @@ export default defineConfig({
         nodeResolve({
             exportConditions: ['node'],
         }),
+        terser(),
     ],
     output: {
         file: 'dist/etcher.js',

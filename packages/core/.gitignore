@@ -1,5 +1,6 @@
 # local testing
 test/
+etcher.config.js
 
 # dependencies
 node_modules/

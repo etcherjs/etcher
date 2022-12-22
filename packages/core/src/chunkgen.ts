@@ -3,8 +3,8 @@ import chalk from 'chalk';
 
 const initialValue = `
 var wrappedEval = (expression, arg) => {
-    if (arg) {
-        const fn = Function(\`"use strict";return (\${expression})\`)
+        if (arg) {
+            const fn = Function(\`"use strict";return (\${expression})\`)
 
         return fn(arg);
     }
@@ -63,6 +63,7 @@ var parseEvents = (doc) => {
 var transform = (doc, name) => {
     class etcherElement extends HTMLElement {
         _listeners = {};
+        _states = {};
         constructor() {
             super();
 
@@ -76,17 +77,22 @@ var transform = (doc, name) => {
                 return attr;
             });
 
-            parseAt(doc).forEach((rule) => {
-                const ruleContent = doc.substring(rule.match.index + rule.match[0].length, doc.indexOf("{@end}", rule.match.index));
+            const atRules = parseAt(doc);
+
+            for (let i = 0; i < atRules.length; i++) {
+                const rule = atRules[i];
+                
+                const ruleContent = doc.substring(rule.match.index + rule.match[0].length, doc.indexOf('{@end}', rule.match.index));
+
                 switch (rule.type) {
                     case 'loop':
-                        const loopCount = Number(rule.value.split(',')[0].trim());
+                        const loopCount = Number(rule.value);
 
                         doc = doc.replace(rule.match[0] + ruleContent + '{@end}', ruleContent.repeat(loopCount));
 
                         break;
                     case 'if':
-                        const ifCondition = rule.value.split(',')[0].trim();
+                        const ifCondition = rule.value;
 
                         const conditionResult = wrappedEval(ifCondition);
 
@@ -97,12 +103,31 @@ var transform = (doc, name) => {
                         }
 
                         break;
+                    case 'state':
+                        const stateName = rule.value.split(' ')[0];
+                        let stateValue = rule.value.split('=')[1];
+
+                        if (!stateValue) {  
+                            stateValue = this.getAttribute(stateName) || null;
+                        }
+
+                        if (stateValue.startsWith('{') || stateValue.startsWith('[')) {
+                            stateValue = parseJSON(stateValue);
+                        }
+
+                        this._states[stateName] = stateValue;
+
+                        break;
                     default:
                         break;
                 }
-            });
+            }
 
-            parseEvents(doc).forEach((attr) => {
+            const events = parseEvents(doc);
+
+            for (let i = 0; i < events.length; i++) {
+                const attr = events[i];
+
                 const attrContent = attr.match[0];
 
                 doc = doc.replace(attrContent, '');
@@ -127,7 +152,7 @@ var transform = (doc, name) => {
                         content: innerHTML
                     }
                 ]
-            })
+            }
 
             const parsed = new DOMParser().parseFromString(doc, "text/html");
 
@@ -137,9 +162,13 @@ var transform = (doc, name) => {
 
             shadow.append(...parsed.body.children)
 
-            for (const [key, value] of Object.entries(this._listeners)) {
+            for (let i = 0; i < Object.entries(this._listeners).length; i++) {
+                const [key, value] = Object.entries(this._listeners)[i];
+
                 this.shadowRoot.addEventListener(key, (e) => {
-                    value.forEach((listener) => {
+                    for (let i = 0; i < value.length; i++) {
+                        const listener = value[i];
+                        
                         const valid = e.target?.tagName?.toLowerCase?.() === listener.tag?.toLowerCase?.() && e.target?.innerHTML === listener.content;
 
                         if (valid) {
@@ -152,9 +181,9 @@ var transform = (doc, name) => {
                             }
 
                             wrappedEval(listener.value, e);
-                        }
-                    })
-                })
+                        };
+                    }
+                });
             }
         }
         _etcherInstance = {
@@ -172,7 +201,7 @@ export const CHUNK_REGISTRY = [];
 
 let id = 0;
 
-export const generateChunk = (name, data) => {
+export const generateChunk = (name: string, data: string) => {
     try {
         id++;
         const suffix = crypto.randomBytes(4).toString('hex');
@@ -193,7 +222,7 @@ export const generateChunk = (name, data) => {
     }
 };
 
-export const parseFile = (file) => {
+export const parseFile = (file: string) => {
     try {
         let fileData = file;
 
@@ -210,7 +239,7 @@ export const parseFile = (file) => {
     }
 };
 
-export const done = (expectedLength) => {
+export const done = (expectedLength: number) => {
     return CHUNK_REGISTRY.length === expectedLength;
 };
 

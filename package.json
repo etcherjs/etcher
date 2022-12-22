@@ -1,12 +1,8 @@
 {
-  "name": "etcher",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+    "name": "etcher",
+    "version": "1.0.0",
+    "description": "Create reusable web components without touching a single line of javascript.",
+    "keywords": [],
+    "author": "TheCommieAxolotl",
+    "license": "MIT"
 }

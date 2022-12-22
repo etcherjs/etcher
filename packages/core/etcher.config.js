@@ -1,4 +1,4 @@
 export default {
-    srcDir: 'test',
-    outDir: 'test/public',
+    input: 'test',
+    output: 'test/public',
 };

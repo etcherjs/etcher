@@ -8,6 +8,12 @@
         "etcher": "dist/etcher.js"
     },
     "main": "dist/etcher.js",
+    "module": "dist/modetcher.js",
+    "exports": {
+        ".": {
+            "import": "./dist/modetcher.js"
+        }
+    },
     "scripts": {
         "dev": "rollup -c -w",
         "etcher": "node . -w"

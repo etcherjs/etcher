@@ -1,4 +1,4 @@
-import type { Config } from './types.js';
+import type { Options } from './types.js';
 import path from 'path';
 
 const templateConfig = {
@@ -6,11 +6,11 @@ const templateConfig = {
     output: 'public',
 };
 
-let config: Config;
+let config: Options;
 
-const importConfig: () => Promise<Config> = () => {
+const importConfig: () => Promise<Options> = () => {
     return new Promise(async (resolve, reject) => {
-        let configModule: { default: Config };
+        let configModule: { default: Options };
         try {
             configModule = await import(
                 path.join(process.cwd(), 'etcher.config.js')
@@ -19,9 +19,9 @@ const importConfig: () => Promise<Config> = () => {
             resolve(templateConfig);
             return;
         }
-        config = configModule.default;
+        config = { ...templateConfig, ...configModule.default };
         resolve(config);
-    }) as Promise<Config>;
+    }) as Promise<Options>;
 };
 
 export const getConfig = async () => {

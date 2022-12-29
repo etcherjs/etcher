@@ -1,9 +1,11 @@
 import { generateCoreFile, migratePages, watch } from './output';
-import type { Options } from './types';
+import { registerPlugins } from './plugins';
 import serve from './serve';
 import chalk from 'chalk';
 
 if (process.argv[1]) {
+    registerPlugins();
+
     console.log(`
               .             oooo                           
             .o8             \`888                           

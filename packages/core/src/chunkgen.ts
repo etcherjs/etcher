@@ -1,7 +1,13 @@
+import type { Chunk } from './types';
+import { runHooks } from './plugins';
 import crypto from 'crypto';
 import chalk from 'chalk';
 
 const initialValue = `
+window._etcherFiber = {
+    active_components: {},
+    listeners: {},
+}
 var wrappedEval = (expression, arg) => {
         if (arg) {
             const fn = Function(\`"use strict";return (\${expression})\`)
@@ -66,6 +72,8 @@ var transform = (doc, name) => {
         _states = {};
         constructor() {
             super();
+
+            window._etcherFiber.active_components[name] = this;
 
             doc = doc.replaceAll(/\{\{(.*)\}\}/g, (match, p1) => {
                 const attr = this.getAttribute(p1) || '';
@@ -152,6 +160,8 @@ var transform = (doc, name) => {
                         content: innerHTML
                     }
                 ]
+
+                window._etcherFiber.listeners[name] = this._listeners;
             }
 
             const parsed = new DOMParser().parseFromString(doc, "text/html");
@@ -197,26 +207,47 @@ var transform = (doc, name) => {
 
 export let chunks = initialValue;
 
-export const CHUNK_REGISTRY = [];
+export const CHUNK_REGISTRY: Chunk[] = [];
 
 let id = 0;
 
-export const generateChunk = (name: string, data: string) => {
+const escape = (str: string) => {
+    return str.replace(/`/g, '\\`').replace(/\${/g, '\\${');
+};
+
+export const processChunk = async (name: string, data: string) => {
     try {
         id++;
+
         const suffix = crypto.randomBytes(4).toString('hex');
         const chunkName = `etcher-${suffix}`;
 
-        const escapedData = data.replace(/`/g, '\\`');
-
-        CHUNK_REGISTRY.push({
+        const chunk: Chunk = {
             id,
             name,
             chunkName,
-            data: `transform(\`${escapedData}\`, '${chunkName}');`,
-        });
+            data: `${data}`,
+        };
 
-        chunks += CHUNK_REGISTRY.find((chunk) => chunk.id === id)?.data;
+        const PluginHookResult = await runHooks('processChunk', chunk);
+
+        if (PluginHookResult?.data) {
+            PluginHookResult.data = escape(PluginHookResult.data);
+        } else {
+            chunk.data = escape(chunk.data);
+        }
+
+        chunks += `transform(\`${PluginHookResult?.data || chunk.data}\`, '${
+            PluginHookResult?.chunkName || chunk.chunkName
+        }');`;
+
+        CHUNK_REGISTRY.push(PluginHookResult || chunk);
+
+        runHooks(
+            'generatedChunk',
+            PluginHookResult || chunk,
+            PluginHookResult?.data || chunk.data
+        );
     } catch (e) {
         console.error(chalk.red(`Error generating chunk: ${e}`));
     }

@@ -1,11 +1,12 @@
 import {
     chunks,
-    generateChunk,
+    processChunk,
     parseFile,
     done,
     resetChunks,
 } from './chunkgen.js';
 import { getConfig } from './config.js';
+import { runHooks } from './plugins.js';
 import { minify } from 'terser';
 import chalk from 'chalk';
 import path from 'path';
@@ -36,7 +37,20 @@ export const generateCoreFile = async (log: boolean = true) => {
                     'utf8'
                 );
 
-                generateChunk(componentName, componentData);
+                const PluginHookResult = await runHooks(
+                    'processComponent',
+                    `${componentData}`,
+                    file,
+                    path.join(config.input, 'components', file)
+                );
+
+                processChunk(componentName, PluginHookResult || componentData);
+
+                runHooks(
+                    'generatedComponent',
+                    `${componentData}`,
+                    path.join(config.input, 'components', file)
+                );
 
                 console.log(chalk.greenBright(`Transformed ${file}!`));
             } else {
@@ -97,6 +111,15 @@ export const migratePages = async () => {
                 'utf8'
             );
 
+            const PluginHookResult = await runHooks(
+                'processPage',
+                `${pageData}`,
+                page,
+                path.join(config.input, 'pages', page)
+            );
+
+            pageData = PluginHookResult || pageData;
+
             // meh... it's a replacement for a DOMParser but it can be improved
             if (page.includes('.xtml')) {
                 pageData = parseFile(
@@ -110,6 +133,12 @@ export const migratePages = async () => {
             await fs.promises.writeFile(
                 path.join(config.output, page.replace('.xtml', '.html')),
                 pageData
+            );
+
+            runHooks(
+                'generatedPage',
+                `${pageData}`,
+                path.join(config.output, page)
             );
 
             console.log(chalk.greenBright(`Migrated ${page}!`));

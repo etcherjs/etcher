@@ -137,7 +137,7 @@ const createProject = async () => {
                 build: 'etcher -b',
             },
             dependencies: {
-                '@etcherjs/etcher': '^2.0.0',
+                '@etcher/core': '^2.0.0',
             },
         };
 

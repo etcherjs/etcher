@@ -1,6 +1,6 @@
 {
     "name": "create-etcher",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Create an Etcher app",
     "main": "index.js",
     "type": "module",

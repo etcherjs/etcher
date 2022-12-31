@@ -9,7 +9,7 @@
     <body>
         <div class="center">
             <etcher-Title name="World"></etcher-Title>
-            <etcher-Description></etcher-CustomDescription>
+            <etcher-Description></etcher-Description>
         </div>
 
         <style>

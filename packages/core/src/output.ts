@@ -130,6 +130,38 @@ export const migratePages = async () => {
                 );
             }
 
+            const computedAttributeRegex =
+                /#[a-zA-Z0-9\-:]+\s*=\s*\{(?:\s*.*?\s*)\}\s*}?/gs;
+
+            const computedAttributes = pageData.match(computedAttributeRegex);
+
+            if (computedAttributes) {
+                for (let i = 0; i < computedAttributes.length; i++) {
+                    const attr = computedAttributes[i];
+
+                    const attrName = attr.split('=')[0];
+
+                    let attrValue = attr
+                        .trim()
+                        .split('=')[1]
+                        .replace(/^\{/, '')
+                        .replace(/\}$/, '')
+                        .trim();
+
+                    attrValue = attrValue.replaceAll('"', '&quot;');
+                    attrValue = attrValue.replaceAll("'", '&apos;');
+                    attrValue = attrValue.replaceAll('<', '&lt;');
+                    attrValue = attrValue.replaceAll('>', '&gt;');
+                    attrValue = attrValue.replaceAll('&', '&amp;');
+                    attrValue = attrValue.replaceAll('`', '&grave;');
+
+                    pageData = pageData.replace(
+                        attr,
+                        `${attrName}="${attrValue}"`
+                    );
+                }
+            }
+
             await fs.promises.writeFile(
                 path.join(config.output, page.replace('.xtml', '.html')),
                 pageData

@@ -8,11 +8,13 @@ window._etcherFiber = {
     active_components: {},
     listeners: {},
 }
-var wrappedEval = (expression, arg) => {
-        if (arg) {
-            const fn = Function(\`"use strict";return (\${expression})\`)
-
-        return fn(arg);
+var wrappedEval = (expression, arg, namedArg) => {
+    console.log({expression, arg, namedArg});
+    if (arg && !namedArg) {
+        return Function(\`"use strict";return (\${expression})\`)(arg);
+    }
+    if (arg && namedArg) {
+        return new Function(namedArg, \`"use strict";return (\${expression})\`)(arg);
     }
     return Function(\`"use strict";return (\${expression})\`)();
 }
@@ -22,9 +24,9 @@ var startsWith = (str, regex, offset = 0) => {
     return !!result;
 }
 var parseJSON = (obj) => {
-    obj = obj.replace(/,\\s*$/, '');
+    obj = obj.replace(/,\\s*(?=})/, '');
     obj = obj.replace(/'/g, '"');
-    obj = obj.replace(/"([^"]+)":/g, '$1:');
+    obj = obj.replace(/([a-zA-Z0-9_]+):/g, '"$1":');
 
     return JSON.parse(obj);
 };
@@ -76,10 +78,52 @@ var transform = (doc, name) => {
             window._etcherFiber.active_components[name] = this;
 
             doc = doc.replaceAll(/\{\{(.*)\}\}/g, (match, p1) => {
-                const attr = this.getAttribute(p1) || '';
+                if (this.hasAttribute("#" + p1.split(".")[0])) {
+                    let attr = this.getAttribute("#" + p1.split(".")[0]);
 
+                    attr = attr.trim();
+
+                    attr = attr.replaceAll('&quot;', '"');
+                    attr = attr.replaceAll('&apos;', "'");
+                    attr = attr.replaceAll('&lt;', '<');
+                    attr = attr.replaceAll('&gt;', '>');
+                    attr = attr.replaceAll('&amp;', '&');
+                    attr = attr.replaceAll('&grave;', '\`');
+
+                    if (attr.startsWith('{') || attr.startsWith('[')) {
+                        try {
+                            attr = JSON.parse(attr);
+                        } catch (e) {
+                            try {
+                                attr = parseJSON(attr);
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }
+                    }
+
+                    if (p1.split(".").length > 1) {
+                        return wrappedEval(p1, attr, p1.split(".")[0]);
+                    }
+
+                    attr = wrappedEval(attr);
+
+                    return attr;
+                }
+
+                let attr = this.getAttribute(p1) || '';
+    
                 if (attr.startsWith('{') || attr.startsWith('[')) {
-                    return parseJSON(attr);
+                    try {
+                        attr = JSON.parse(attr);
+                    } catch (e) {
+                        try {
+                            attr = parseJSON(attr);
+                        }
+                        catch (e) {
+                            console.error(e);
+                        }
+                    }
                 }
 
                 return attr;

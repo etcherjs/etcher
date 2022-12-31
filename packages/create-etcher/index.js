@@ -146,7 +146,7 @@ const createProject = async () => {
             JSON.stringify(packageJson, null, 2)
         );
 
-        const etcherConfig = `export default {\n  srcDir: 'src',\n  outDir: 'public'\n};`;
+        const etcherConfig = `export default {\n  input: 'src',\n  output: 'public'\n};`;
 
         fs.writeFileSync(
             path.resolve(projectPath, 'etcher.config.js'),

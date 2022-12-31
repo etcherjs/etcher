@@ -93,37 +93,50 @@ export const generateCoreFile = async (log: boolean = true) => {
     }
 };
 
+const get = async (p: string) => {
+    const entries = await fs.promises.readdir(p, { withFileTypes: true });
+
+    const files = entries
+        .filter((entry) => !entry.isDirectory())
+        .map((file) => ({ ...file, path: path.join(p, file.name) }));
+
+    const folders = entries.filter((entry) => entry.isDirectory());
+
+    for (let i = 0; i < folders.length; i++) {
+        const folder = folders[i];
+
+        files.push(...(await get(path.join(p, folder.name, '/'))));
+    }
+
+    return files;
+};
+
 export const migratePages = async () => {
     try {
         console.log(chalk.white('Migrating pages...'));
         console.log('');
         const config = await getConfig();
 
-        const pages = await fs.promises.readdir(
-            path.join(config.input, 'pages')
-        );
+        const files = await get(path.join(config.input, 'pages'));
 
-        for (const page of pages) {
-            console.log(chalk.cyanBright(`Migrating ${page}...`));
+        for (const file of files) {
+            console.log(chalk.cyanBright(`Migrating ${file.path}`));
 
-            let pageData = await fs.promises.readFile(
-                path.join(config.input, 'pages', page),
-                'utf8'
-            );
+            let fileData = await fs.promises.readFile(file.path, 'utf8');
 
             const PluginHookResult = await runHooks(
                 'processPage',
-                `${pageData}`,
-                page,
-                path.join(config.input, 'pages', page)
+                `${fileData}`,
+                file.name,
+                file.path
             );
 
-            pageData = PluginHookResult || pageData;
+            fileData = PluginHookResult || fileData;
 
             // meh... it's a replacement for a DOMParser but it can be improved
-            if (page.includes('.xtml')) {
-                pageData = parseFile(
-                    pageData.replace(
+            if (file.name.includes('.xtml')) {
+                fileData = parseFile(
+                    fileData.replace(
                         '</body>',
                         `<script src="/_chisel.js"></script></body>`
                     )
@@ -133,7 +146,7 @@ export const migratePages = async () => {
             const computedAttributeRegex =
                 /#[a-zA-Z0-9\-:]+\s*=\s*\{(?:\s*.*?\s*)\}\s*}?/gs;
 
-            const computedAttributes = pageData.match(computedAttributeRegex);
+            const computedAttributes = fileData.match(computedAttributeRegex);
 
             if (computedAttributes) {
                 for (let i = 0; i < computedAttributes.length; i++) {
@@ -155,7 +168,7 @@ export const migratePages = async () => {
                     attrValue = attrValue.replaceAll('&', '&amp;');
                     attrValue = attrValue.replaceAll('`', '&grave;');
 
-                    pageData = pageData.replace(
+                    fileData = fileData.replace(
                         attr,
                         `${attrName}="${attrValue}"`
                     );
@@ -163,17 +176,13 @@ export const migratePages = async () => {
             }
 
             await fs.promises.writeFile(
-                path.join(config.output, page.replace('.xtml', '.html')),
-                pageData
+                file.path.replace('.xtml', '.html'),
+                fileData
             );
 
-            runHooks(
-                'generatedPage',
-                `${pageData}`,
-                path.join(config.output, page)
-            );
+            runHooks('generatedPage', `${fileData}`, file.path);
 
-            console.log(chalk.greenBright(`Migrated ${page}!`));
+            console.log(chalk.greenBright(`Migrated ${file.path}!`));
         }
 
         console.log('');

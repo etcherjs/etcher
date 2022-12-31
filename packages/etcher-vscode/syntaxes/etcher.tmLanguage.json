@@ -99,9 +99,7 @@
                 }
             ]
         },
-        "special-tags": {
-            "patterns": []
-        },
+        "special-tags": {},
         "attribute": {
             "patterns": [
                 {
@@ -116,7 +114,7 @@
                     }
                 },
                 {
-                    "begin": "(@?[a-zA-Z0-9\\-:]+)\\s*=\\s*\\{",
+                    "begin": "([#@]?[a-zA-Z0-9\\-:]+)\\s*=\\s*\\{",
                     "end": "\\}",
                     "beginCaptures": {
                         "0": {

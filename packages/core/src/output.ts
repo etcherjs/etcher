@@ -175,10 +175,18 @@ export const migratePages = async () => {
                 }
             }
 
-            await fs.promises.writeFile(
-                file.path.replace('.xtml', '.html'),
-                fileData
+            const outputPath = path.join(
+                config.output,
+                file.path
+                    .replace(path.join(config.input, 'pages'), '')
+                    .replace('.xtml', '.html')
             );
+
+            if (!fs.existsSync(path.dirname(outputPath))) {
+                fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+            }
+
+            await fs.promises.writeFile(outputPath, fileData);
 
             runHooks('generatedPage', `${fileData}`, file.path);
 

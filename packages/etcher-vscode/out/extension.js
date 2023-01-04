@@ -62,42 +62,36 @@ function activate(context) {
             const char = line?.charAt(position.character - 1);
             if (editor) {
                 const config = findConfig(editor.document.fileName);
+                let configObj = null;
                 if (config) {
-                    console.log("e");
                     const data = fs_1.default.readFileSync(config.path, "utf8");
-                    const exported = data.match(/export\s+default\s+({[\s\S]*})/);
-                    if (!exported) {
-                        return [];
-                    }
-                    const obj = JSON.parse(exported[1]
-                        .replace(/(\w+):/g, '"$1":')
-                        .replace(/'/g, '"')
-                        .replace(/,\s*}/g, "}"));
-                    const componentsDir = path_1.default.join(config.rootPath, obj?.srcDir || "src", "components");
-                    const files = fs_1.default.readdirSync(componentsDir);
-                    const items = files.map((file) => {
-                        const name = file.replace(".xtml", "");
-                        const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Class);
-                        item.insertText = new vscode.SnippetString(`${char === "<" ? "" : "<"}etcher-${name}>$1</etcher-${name}>`);
-                        item.documentation = new vscode.MarkdownString(`Inserts a \`<${name}/>\` component, which is defined at [\`${obj?.srcDir || "src"}/components/${file}\`](file://${path_1.default.join(componentsDir, file)}).`);
-                        return item;
-                    });
-                    return items;
+                    const exported = data.match(/export\s+default\s+(?:defineConfig\()?({[\s\S]*})\)?/);
+                    configObj = exported
+                        ? JSON.parse(exported[1]
+                            .replace(/(\w+):/g, '"$1":')
+                            .replace(/'/g, '"')
+                            .replace(/,\s*}/g, "}"))
+                        : {
+                            input: "src",
+                            output: "public",
+                        };
                 }
-                const packagePath = closestPackage(editor.document.fileName);
-                if (packagePath) {
-                    const componentsDir = path_1.default.join(packagePath, "src", "components");
-                    const files = fs_1.default.readdirSync(componentsDir);
-                    const items = files.map((file) => {
-                        const name = file.replace(".xtml", "");
-                        const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Function);
-                        item.insertText = new vscode.SnippetString(`<etcher-${name}><etcher-${name}/>`);
-                        item.documentation = new vscode.MarkdownString(`Inserts a \`<${name}/>\` component, which is defined at \`src/components/${file}\`.`);
-                        return item;
-                    });
-                    return items;
+                if (!configObj) {
+                    configObj = {
+                        input: "src",
+                        output: "public",
+                    };
                 }
-                return undefined;
+                const componentsDir = path_1.default.join(config?.rootPath || closestPackage(editor.document.fileName) || "", configObj?.input || "src", "components");
+                const files = fs_1.default.readdirSync(componentsDir);
+                const items = files.map((file) => {
+                    const name = file.replace(".xtml", "");
+                    const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Class);
+                    item.insertText = new vscode.SnippetString(`${char === "<" ? "" : "<"}etcher-${name}>$1</etcher-${name}>`);
+                    item.documentation = new vscode.MarkdownString(`Inserts a \`<${name}/>\` component, which is defined at [\`${configObj?.input || "src"}/components/${file}\`](file://${path_1.default.join(componentsDir, file)}).`);
+                    return item;
+                });
+                return items;
             }
         },
     }, "<", "");
@@ -123,7 +117,7 @@ function activate(context) {
                         path: value,
                         content: text,
                     };
-                    const config = await findConfig(editor.document.fileName);
+                    const config = findConfig(editor.document.fileName);
                     if (config) {
                         const data = await import(config.path);
                         const srcPath = path_1.default.join(config.rootPath, data?.default?.srcDir || "src", "components");

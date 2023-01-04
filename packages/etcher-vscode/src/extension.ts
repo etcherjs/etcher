@@ -55,63 +55,53 @@ export function activate(context: vscode.ExtensionContext) {
                 if (editor) {
                     const config = findConfig(editor.document.fileName);
 
+                    let configObj: null | {
+                        input?: string;
+                        output?: string;
+                    } = null;
+
                     if (config) {
-                        console.log("e");
                         const data = fs.readFileSync(config.path, "utf8");
 
-                        const exported = data.match(/export\s+default\s+({[\s\S]*})/);
+                        const exported = data.match(/export\s+default\s+(?:defineConfig\()?({[\s\S]*})\)?/);
 
-                        if (!exported) {
-                            return [];
-                        }
+                        configObj = exported
+                            ? JSON.parse(
+                                  exported[1]
+                                      .replace(/(\w+):/g, '"$1":')
+                                      .replace(/'/g, '"')
+                                      .replace(/,\s*}/g, "}")
+                              )
+                            : {
+                                  input: "src",
+                                  output: "public",
+                              };
+                    }
 
-                        const obj = JSON.parse(
-                            exported[1]
-                                .replace(/(\w+):/g, '"$1":')
-                                .replace(/'/g, '"')
-                                .replace(/,\s*}/g, "}")
+                    if (!configObj) {
+                        configObj = {
+                            input: "src",
+                            output: "public",
+                        };
+                    }
+
+                    const componentsDir = path.join(config?.rootPath || closestPackage(editor.document.fileName) || "", configObj?.input || "src", "components");
+
+                    const files = fs.readdirSync(componentsDir);
+
+                    const items = files.map((file) => {
+                        const name = file.replace(".xtml", "");
+
+                        const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Class);
+                        item.insertText = new vscode.SnippetString(`${char === "<" ? "" : "<"}etcher-${name}>$1</etcher-${name}>`);
+                        item.documentation = new vscode.MarkdownString(
+                            `Inserts a \`<${name}/>\` component, which is defined at [\`${configObj?.input || "src"}/components/${file}\`](file://${path.join(componentsDir, file)}).`
                         );
 
-                        const componentsDir = path.join(config.rootPath, obj?.srcDir || "src", "components");
+                        return item;
+                    });
 
-                        const files = fs.readdirSync(componentsDir);
-
-                        const items = files.map((file) => {
-                            const name = file.replace(".xtml", "");
-
-                            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Class);
-                            item.insertText = new vscode.SnippetString(`${char === "<" ? "" : "<"}etcher-${name}>$1</etcher-${name}>`);
-                            item.documentation = new vscode.MarkdownString(
-                                `Inserts a \`<${name}/>\` component, which is defined at [\`${obj?.srcDir || "src"}/components/${file}\`](file://${path.join(componentsDir, file)}).`
-                            );
-
-                            return item;
-                        });
-
-                        return items;
-                    }
-
-                    const packagePath = closestPackage(editor.document.fileName);
-
-                    if (packagePath) {
-                        const componentsDir = path.join(packagePath, "src", "components");
-
-                        const files = fs.readdirSync(componentsDir);
-
-                        const items = files.map((file) => {
-                            const name = file.replace(".xtml", "");
-
-                            const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Function);
-                            item.insertText = new vscode.SnippetString(`<etcher-${name}><etcher-${name}/>`);
-                            item.documentation = new vscode.MarkdownString(`Inserts a \`<${name}/>\` component, which is defined at \`src/components/${file}\`.`);
-
-                            return item;
-                        });
-
-                        return items;
-                    }
-
-                    return undefined;
+                    return items;
                 }
             },
         },
@@ -145,7 +135,7 @@ export function activate(context: vscode.ExtensionContext) {
                             content: text,
                         };
 
-                        const config = await findConfig(editor.document.fileName);
+                        const config = findConfig(editor.document.fileName);
 
                         if (config) {
                             const data = await import(config.path);

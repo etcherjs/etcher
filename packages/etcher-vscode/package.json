@@ -1,82 +1,88 @@
 {
-    "name": "etcher-vscode",
-    "displayName": "etcher-vscode",
-    "description": "Adds Etcher support to your IDE",
-    "version": "1.0.0",
-    "license": "MIT",
-    "engines": {
-        "vscode": "^1.72.0"
-    },
-    "icon": "assets/icon.png",
-    "publisher": "TheCommieAxolotl",
-    "categories": [
-        "Other"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/etcherjs/etcher"
-    },
-    "activationEvents": [
-        "onCommand:etcher-vscode.createComponent",
-        "onLanguage:html"
-    ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "languages": [
-            {
-                "id": "etcher",
-                "aliases": [
-                    "Etcher",
-                    "etcher",
-                    "etcher"
-                ],
-                "extensions": [
-                    ".xtml"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "etcher",
-                "scopeName": "source.etcher",
-                "path": "./syntaxes/etcher.tmLanguage.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "etcher-vscode.createComponent",
-                "title": "Create Component from Selection"
-            }
-        ],
-        "menus": {
-            "editor/context": [
-                {
-                    "command": "etcher-vscode.createComponent",
-                    "when": "editorHasSelection && editorLangId == 'etcher' || editorLangId == 'html'",
-                    "group": "navigation"
-                }
-            ]
-        }
-    },
-    "scripts": {
-        "vscode:prepublish": "pnpm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "pnpm run compile && pnpm run lint",
-        "lint": "eslint src --ext ts"
-    },
-    "devDependencies": {
-        "@types/vscode": "^1.72.0",
-        "@types/glob": "^8.0.0",
-        "@types/mocha": "^10.0.0",
-        "@types/node": "16.x",
-        "@typescript-eslint/eslint-plugin": "^5.38.1",
-        "@typescript-eslint/parser": "^5.38.1",
-        "eslint": "^8.24.0",
-        "glob": "^8.0.3",
-        "mocha": "^10.0.0",
-        "typescript": "^4.8.4",
-        "@vscode/test-electron": "^2.1.5"
-    }
+	"name": "etcher-vscode",
+	"displayName": "etcher-vscode",
+	"description": "Adds Etcher support to your IDE",
+	"version": "1.0.0",
+	"license": "MIT",
+	"engines": {
+		"vscode": "^1.72.0"
+	},
+	"icon": "assets/icon.png",
+	"publisher": "TheCommieAxolotl",
+	"categories": [
+		"Other"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/etcherjs/etcher"
+	},
+	"activationEvents": [
+		"onCommand:etcher-vscode.createComponent",
+		"onLanguage:html"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"languages": [
+			{
+				"id": "etcher",
+				"aliases": [
+					"Etcher",
+					"etcher",
+					"etcher"
+				],
+				"extensions": [
+					".xtml"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "etcher",
+				"scopeName": "source.etcher",
+				"path": "./syntaxes/etcher.tmLanguage.json"
+			}
+		],
+		"commands": [
+			{
+				"command": "etcher-vscode.createComponent",
+				"title": "Create Component from Selection"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "etcher-vscode.createComponent",
+					"when": "editorHasSelection && editorLangId == 'etcher' || editorLangId == 'html'",
+					"group": "navigation"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "pnpm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "pnpm run compile && pnpm run lint",
+		"lint": "eslint src --ext ts"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.72.0",
+		"@types/glob": "^8.0.0",
+		"@types/mocha": "^10.0.0",
+		"@types/node": "16.x",
+		"@typescript-eslint/eslint-plugin": "^5.38.1",
+		"@typescript-eslint/parser": "^5.38.1",
+		"eslint": "^8.24.0",
+		"glob": "^8.0.3",
+		"mocha": "^10.0.0",
+		"typescript": "^4.8.4",
+		"@vscode/test-electron": "^2.1.5"
+	},
+	"__metadata": {
+		"id": "84e0e595-31f9-4d50-b1a6-13af2e91087b",
+		"publisherDisplayName": "TheCommieAxolotl",
+		"publisherId": "8cc182d5-8272-41a9-b287-ae02e3f8ce32",
+		"isPreReleaseVersion": false
+	}
 }

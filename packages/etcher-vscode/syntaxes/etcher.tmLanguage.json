@@ -274,10 +274,15 @@
                     "name": "punctuation.definition.interpolation.end.etcher"
                 }
             },
-            "contentName": "meta.interpolation.etcher"
+            "contentName": "source.js.embedded.etcher",
+            "patterns": [
+                {
+                    "include": "source.js"
+                }
+            ]
         },
         "special-tags-void": {
-            "begin": "\\{([#@][a-zA-Z0-9\\-:]+)",
+            "begin": "\\{([#@:/][a-zA-Z0-9\\-:]+)",
             "end": "\\}",
             "beginCaptures": {
                 "0": {

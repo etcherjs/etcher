@@ -10,12 +10,10 @@ export type ExternalPluginOptions = {
     hooks: {
         processComponent?: (
             code: string,
-            fileName: string,
             path: string
         ) => (string | null) | Promise<string | null>;
         processPage?: (
             code: string,
-            fileName: string,
             path: string
         ) => (string | null) | Promise<string | null>;
         processChunk?: (chunk: Chunk) => (Chunk | null) | Promise<Chunk | null>;
@@ -28,27 +26,27 @@ export type ExternalPluginOptions = {
 
 export type PluginHookParams =
     | {
-          hook: 'processComponent';
-          args: [string, string, string];
+          hook: 'processComponent' | string;
+          args: [string, string];
       }
     | {
-          hook: 'processPage';
-          args: [string, string, string];
+          hook: 'processPage' | string;
+          args: [string, string];
       }
     | {
-          hook: 'processChunk';
+          hook: 'processChunk' | string;
           args: [Chunk];
       }
     | {
-          hook: 'generatedComponent';
+          hook: 'generatedComponent' | string;
           args: [string, string];
       }
     | {
-          hook: 'generatedPage';
+          hook: 'generatedPage' | string;
           args: [string, string];
       }
     | {
-          hook: 'generatedChunk';
+          hook: 'generatedChunk' | string;
           args: [Chunk];
       };
 
@@ -56,4 +54,5 @@ export type Options = {
     input?: string;
     output?: string;
     plugins?: ExternalPluginOptions[];
+    batteryMode?: boolean;
 };

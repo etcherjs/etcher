@@ -38,7 +38,6 @@
         "@rollup/plugin-terser": "^0.2.1",
         "@rollup/plugin-typescript": "^10.0.1",
         "chalk": "^5.0.1",
-        "node-html-parser": "^6.1.4",
         "rollup": "^3.8.0",
         "terser": "^5.15.0",
         "tslib": "^2.4.1",

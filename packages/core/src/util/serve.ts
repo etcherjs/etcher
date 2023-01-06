@@ -1,5 +1,5 @@
 import { createServer } from 'vite';
-import { getConfig } from './config';
+import { getConfig } from '../config';
 import path from 'path';
 
 const config = await getConfig();

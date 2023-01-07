@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { generateCoreFile, migratePages, watch } from './chunkgen/output';
 import { divider, error, log, whitespace, wordmark } from './util/logger';
 import { registerPlugins } from './config/plugins';

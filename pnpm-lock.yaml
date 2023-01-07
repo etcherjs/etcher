@@ -12,6 +12,7 @@ importers:
       '@rollup/plugin-typescript': ^10.0.1
       chalk: ^5.0.1
       rollup: ^3.8.0
+      rollup-plugin-preserve-shebangs: ^0.2.0
       terser: ^5.15.0
       tslib: ^2.4.1
       typescript: ^4.8.4
@@ -24,6 +25,7 @@ importers:
       '@rollup/plugin-typescript': 10.0.1_1628fbb54473402941742abf34bb1cbc
       chalk: 5.2.0
       rollup: 3.8.0
+      rollup-plugin-preserve-shebangs: 0.2.0_rollup@3.8.0
       terser: 5.16.1
       tslib: 2.4.1
       typescript: 4.9.4
@@ -1422,6 +1424,12 @@ packages:
       yallist: 4.0.0
     dev: true
 
+  /magic-string/0.25.9:
+    resolution: {integrity: sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ==}
+    dependencies:
+      sourcemap-codec: 1.4.8
+    dev: true
+
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
@@ -1700,6 +1708,15 @@ packages:
       glob: 7.2.0
     dev: true
 
+  /rollup-plugin-preserve-shebangs/0.2.0_rollup@3.8.0:
+    resolution: {integrity: sha512-OEyTIfZwUJ7yUAVAbegac/bNvp1WJzgZcQNCFprWX42wwwOqlJwrev9lUmzZdYVgCWct+03xUPvZg4RfgkM9oQ==}
+    peerDependencies:
+      rollup: '*'
+    dependencies:
+      magic-string: 0.25.9
+      rollup: 3.8.0
+    dev: true
+
   /rollup/3.8.0:
     resolution: {integrity: sha512-+UR6PnUslneJNiJfLSzy4XH6R50ZGF0MS7UCv20ftXrktF/TkvZDwiBtXX65esblLR5p8w6LmXgPwt2f2B8SoQ==}
     engines: {node: '>=14.18.0', npm: '>=8.0.0'}
@@ -1779,6 +1796,11 @@ packages:
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /sourcemap-codec/1.4.8:
+    resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    deprecated: Please use @jridgewell/sourcemap-codec instead
     dev: true
 
   /string-width/4.2.3:

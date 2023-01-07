@@ -1,3 +1,4 @@
+import { preserveShebangs } from 'rollup-plugin-preserve-shebangs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
@@ -13,6 +14,7 @@ export default defineConfig([
                 exportConditions: ['node'],
             }),
             terser(),
+            preserveShebangs(),
         ],
         output: {
             file: 'dist/etcher.js',

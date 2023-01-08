@@ -132,6 +132,7 @@ const createProject = async () => {
             description: '',
             version: '0.0.1',
             private: true,
+            type: 'module',
             scripts: {
                 dev: 'etcher -w',
                 build: 'etcher -b',

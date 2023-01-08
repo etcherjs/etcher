@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
+import { lightRed, lightYellow, green } from 'kolorist';
 import prompts from 'prompts';
 import path from 'path';
 import fs from 'fs';
-import { lightRed, lightYellow, green } from 'kolorist';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -103,6 +103,7 @@ const questions = [
         choices: [
             { title: lightRed('npm'), value: 'npm' },
             { title: lightYellow('pnpm'), value: 'pnpm' },
+            { title: green('yarn'), value: 'yarn' },
         ],
     },
     {
@@ -154,8 +155,10 @@ const createProject = async () => {
         );
 
         const readme = `# ${name}\n\n## Getting Started with \`etcher\`\n\nInstall dependencies:\n\n\`\`\`\n${packageManager} install\n\`\`\`\n\nStart etcher:\n\n\`\`\`\n${packageManager}${
-            packageManager == 'npm' ? ' run' : ''
-        } dev\n\`\`\`\n\nBuild for production:\n\n\`\`\`\n${packageManager} build\n\`\`\`\n`;
+            packageManager !== 'pnpm' ? ' run' : ''
+        } dev\n\`\`\`\n\nBuild for production:\n\n\`\`\`\n${
+            packageManager !== 'pnpm' ? ' run' : ''
+        } build\n\`\`\`\n`;
 
         fs.writeFileSync(path.resolve(projectPath, 'README.md'), readme);
 
@@ -171,7 +174,7 @@ const createProject = async () => {
         console.log(`  cd ${name}`);
         console.log(`  ${packageManager} install`);
         console.log(
-            `  ${packageManager}${packageManager == 'npm' ? ' run' : ''} dev`
+            `  ${packageManager}${packageManager !== 'pnpm' ? ' run' : ''} dev`
         );
         console.log('');
     }

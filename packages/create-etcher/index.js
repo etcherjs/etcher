@@ -134,7 +134,7 @@ const createProject = async () => {
             private: true,
             type: 'module',
             scripts: {
-                dev: 'etcher -w',
+                dev: 'etcher -w -s',
                 build: 'etcher -b',
             },
             dependencies: {

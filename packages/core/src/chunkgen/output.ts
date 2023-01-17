@@ -7,6 +7,7 @@ import {
     CHUNK_REGISTRY,
 } from './index.js';
 import { whitespace, log, error, divider } from '../util/logger.js';
+import { isEtcherFile } from '../util/files.js';
 import { runHooks } from '../config/plugins.js';
 import { getConfig } from '../config/index.js';
 import { HOOK_TYPES } from '../constants.js';
@@ -31,7 +32,7 @@ export const generateCoreFile = async (shouldLog: boolean = true) => {
         );
 
         for (const file of componentFiles) {
-            if (file.endsWith('.xtml')) {
+            if (isEtcherFile(file)) {
                 log(chalk.cyanBright(`Transforming ${file}...`));
 
                 const componentName = file.replace('.xtml', '');
@@ -130,7 +131,7 @@ export const migratePages = async () => {
 
             fileData = PluginHookResult || fileData;
 
-            if (file.name.includes('.xtml')) {
+            if (isEtcherFile(file.name)) {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',

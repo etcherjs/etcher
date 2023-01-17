@@ -22,6 +22,14 @@ export default defineConfig([
         },
     },
     {
+        input: 'src/client/index.ts',
+        plugins: [typescript()],
+        output: {
+            file: 'dist/client.js',
+            format: 'esm',
+        },
+    },
+    {
         input: 'src/module.ts',
         external: ['vite'],
         plugins: [

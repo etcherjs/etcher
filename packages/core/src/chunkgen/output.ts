@@ -1,4 +1,11 @@
-import { chunks, processChunk, parseFile, done, resetChunks } from './index.js';
+import {
+    processChunk,
+    parseFile,
+    done,
+    resetChunks,
+    clientJS,
+    CHUNK_REGISTRY,
+} from './index.js';
 import { whitespace, log, error, divider } from '../util/logger.js';
 import { runHooks } from '../config/plugins.js';
 import { getConfig } from '../config/index.js';
@@ -76,15 +83,8 @@ export const generateCoreFile = async (shouldLog: boolean = true) => {
             fs.mkdirSync(path.join(config.output));
         }
 
-        await fs.promises.writeFile(
-            path.join(config.output, '_chisel.js'),
-            (
-                await minify(chunks)
-            ).code
-        );
-
         whitespace();
-        log(chalk.magenta('Finished Generating chisel!'));
+        log(chalk.magenta('Finished generating chunks!'));
 
         return true;
     } catch (e) {
@@ -134,9 +134,20 @@ export const migratePages = async () => {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',
-                        `<script src="/_chisel.js"></script></body>`
+                        `<script type="module">
+                        ${(await minify(clientJS)).code}
+                        </script>
+                        </body>`
                     )
                 );
+
+                CHUNK_REGISTRY.forEach((chunk) => {
+                    fileData = fileData.replace(
+                        '</body>',
+                        `<script type="module" src="/@etcher/${chunk.chunkName}.js"></script>
+                        </body>`
+                    );
+                });
             }
 
             const computedAttributeRegex =
@@ -184,6 +195,10 @@ export const migratePages = async () => {
 
             await fs.promises.writeFile(outputPath, fileData);
 
+            if (!fs.existsSync(path.join(config.output, '@etcher'))) {
+                fs.mkdirSync(path.join(config.output, '@etcher'));
+            }
+
             runHooks({
                 hook: HOOK_TYPES.GENERATED_PAGE,
                 args: [fileData, file.path],
@@ -191,6 +206,13 @@ export const migratePages = async () => {
 
             log(chalk.greenBright(`Migrated ${file.path}!`));
         }
+
+        CHUNK_REGISTRY.forEach((chunk) => {
+            fs.writeFileSync(
+                path.join(config.output, `@etcher/${chunk.chunkName}.js`),
+                `window.etcher.transform(\`${chunk.data}\`, '${chunk.chunkName}');`
+            );
+        });
 
         whitespace();
         log(chalk.magenta('Finished Migrating pages!'));

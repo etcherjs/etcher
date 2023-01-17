@@ -99,7 +99,6 @@
                 }
             ]
         },
-        "special-tags": {},
         "attribute": {
             "patterns": [
                 {
@@ -257,8 +256,14 @@
                 },
                 {
                     "include": "#special-attribute-values"
+                },
+                {
+                    "include": "#embedded"
                 }
             ]
+        },
+        "embedded": {
+            "patterns": []
         },
         "interpolation": {
             "name": "meta.interpolation.etcher",

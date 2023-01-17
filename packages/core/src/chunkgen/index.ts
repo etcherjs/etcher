@@ -245,7 +245,22 @@ var transform = (doc, name) => {
 
             shadow.append(...parsed.body.children)
 
-           for (let i = 0; i < Object.entries(this._listeners).length; i++) {
+            for (let i = 0; i < this.shadowRoot.styleSheets?.length; i++)  {
+                const style = this.shadowRoot.styleSheets[i];
+
+                if (style.ownerNode.hasAttribute('global')) {
+                    const globalStyle = document.createElement('style');
+
+                    globalStyle.setAttribute('etcher:global', 'true');
+
+                    globalStyle.innerHTML = Array.from(style.cssRules)?.map?.(rule => rule.cssText).join('\\n');
+
+                    document.head.append(globalStyle);
+                    style.ownerNode.remove();
+                }
+            }
+
+            for (let i = 0; i < Object.entries(this._listeners).length; i++) {
                 const [key, value] = Object.entries(this._listeners)[i];
 
                 this.shadowRoot.addEventListener(key, (e) => {

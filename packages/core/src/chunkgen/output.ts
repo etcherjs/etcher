@@ -142,6 +142,8 @@ export const migratePages = async () => {
                 );
 
                 CHUNK_REGISTRY.forEach((chunk) => {
+                    if (!fileData.includes(chunk.chunkName)) return;
+
                     fileData = fileData.replace(
                         '</body>',
                         `<script type="module" src="/@etcher/${chunk.chunkName}.js"></script>

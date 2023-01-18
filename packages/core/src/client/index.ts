@@ -285,25 +285,31 @@ const transform = (doc: string, name: string) => {
                 }
             }
 
-            const eventAttrs = parseExpression(doc, /@([a-zA-Z]*)={(.*)}/g);
+            const eventAttrs = parseExpression(
+                doc,
+                /<([a-zA-Z0-9-]+)(\s*)@([a-zA-Z]*)={(.*?})}?([^<]*)>/gs
+            );
 
             for (let i = 0; i < eventAttrs.length; i++) {
                 const attr = eventAttrs[i];
 
-                const [_, event, expression] = attr;
+                const [
+                    match,
+                    tagName,
+                    attrsBefore,
+                    event,
+                    expression,
+                    attrsAfter,
+                ] = attr;
 
-                doc = doc.replace(attr[0], '');
-
-                let tagStart = doc.lastIndexOf('<', attr.index);
-                let tagEnd = doc.indexOf('>', attr.index);
-
-                const tagContent = doc.substring(tagStart + 1, tagEnd);
-                const tagName = tagContent.split(' ')[0];
-
-                const innerHTML = doc.substring(
-                    tagEnd + 1,
-                    doc.indexOf('</' + tagName + '>', tagEnd)
+                doc = doc.replace(
+                    match,
+                    `<${tagName}${attrsBefore}${attrsAfter}>`
                 );
+
+                const innerHTML = doc.match(
+                    new RegExp(`<${tagName}.*?>(.*)<\\/${tagName}>`, 's')
+                )[1];
 
                 this._listeners[event] = [
                     ...(this._listeners[event] || []),
@@ -353,30 +359,30 @@ const transform = (doc: string, name: string) => {
             for (let i = 0; i < Object.entries(this._listeners).length; i++) {
                 const [key, value] = Object.entries(this._listeners)[i];
 
-                this.shadowRoot.addEventListener(key, (e) => {
+                this.shadowRoot.addEventListener(key, (event) => {
                     for (let i = 0; i < value.length; i++) {
                         const listener = value[i];
 
                         const valid =
                             (
-                                e.target as HTMLElement
+                                event.target as HTMLElement
                             )?.tagName?.toLowerCase?.() ===
                                 listener.tag?.toLowerCase?.() &&
-                            (e.target as HTMLElement)?.innerHTML ===
+                            (event.target as HTMLElement)?.innerHTML ===
                                 listener.content;
 
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {
-                                const val = listener.value.replace(
-                                    /\(.*\)\s*=>\s*{(\n*.*\n*)*}/,
+                                const value = listener.value.replace(
+                                    /\(.*\)\s*=>\s*{(.*)}/s,
                                     (match, p1) => {
                                         return p1;
                                     }
                                 );
 
                                 wrappedEval(
-                                    val,
-                                    e,
+                                    '(' + listener.value + ')()',
+                                    event,
                                     null,
                                     `const $ = {...window._$etcherCore.c['${name}']._lexicalScope};`
                                 );
@@ -384,7 +390,7 @@ const transform = (doc: string, name: string) => {
 
                             wrappedEval(
                                 listener.value,
-                                e,
+                                event,
                                 null,
                                 `const $ = {...window._$etcherCore.c['${name}']._lexicalScope};`
                             );

@@ -58,6 +58,10 @@
         background-color: #4950b0;
     }
 
+    .counter {
+        margin-top: 25px;
+    }
+
     .highlight {
         color: #666ee0;
     }

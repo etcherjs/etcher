@@ -3,6 +3,28 @@
 
 <a class="sticky" href="https://github.com/etcherjs/etcher">@etcher/core</a>
 
+{@state count = 0}
+{@state message = "increment"}
+
+<p class="counter">Clicks: {{$.count}}</p>
+
+<button @click={() => {
+        const { count, message } = $;
+
+        if (count.get() >= 20) {
+            message.set("decrement");
+        } else if (count.get() <= 0) {
+            message.set("increment");
+        }
+
+        if (message.get() === "increment") {
+            count.set(count.get() + 1);
+        } else {
+            count.set(count.get() - 1);
+        }
+    }}
+>Click me to {{$.message}} the counter</button>
+
 <style>
     p {
         color: #131313;
@@ -17,6 +39,23 @@
         color: #48484d;
         border-radius: 3px;
         font-size: 1rem;
+    }
+
+    button {
+        background-color: #666ee0;
+        color: #f6f8ff;
+        border: none;
+        border-radius: 5px;
+        margin-top: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 10px 20px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    button:hover,
+    button:active {
+        background-color: #4950b0;
     }
 
     .highlight {

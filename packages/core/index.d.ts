@@ -10,16 +10,13 @@ export type ExternalPluginOptions = {
     hooks: {
         processComponent?: (
             code: string,
-            fileName: string,
             path: string
         ) => (string | null) | Promise<string | null>;
         processPage?: (
             code: string,
-            fileName: string,
             path: string
         ) => (string | null) | Promise<string | null>;
         processChunk?: (chunk: Chunk) => (Chunk | null) | Promise<Chunk | null>;
-
         generatedComponent?: (code: string, path: string) => void;
         generatedPage?: (code: string, path: string) => void;
         generatedChunk?: (chunk: Chunk) => void;

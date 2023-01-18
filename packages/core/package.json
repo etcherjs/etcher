@@ -1,6 +1,6 @@
 {
     "name": "@etcher/core",
-    "version": "2.0.5",
+    "version": "2.1.0",
     "description": "A blazingly fast frontend 'framework' to create reusable web components without touching a single line of javascript.",
     "author": "@etcher",
     "license": "MIT",
@@ -38,8 +38,8 @@
         "@rollup/plugin-terser": "^0.2.1",
         "@rollup/plugin-typescript": "^10.0.1",
         "chalk": "^5.0.1",
-        "node-html-parser": "^6.1.4",
         "rollup": "^3.8.0",
+        "rollup-plugin-preserve-shebangs": "^0.2.0",
         "terser": "^5.15.0",
         "tslib": "^2.4.1",
         "typescript": "^4.8.4"

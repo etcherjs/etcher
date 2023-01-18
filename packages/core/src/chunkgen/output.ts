@@ -1,21 +1,25 @@
 import {
-    chunks,
     processChunk,
     parseFile,
     done,
     resetChunks,
-} from './chunkgen.js';
-import { getConfig } from './config.js';
-import { runHooks } from './plugins.js';
+    clientJS,
+    CHUNK_REGISTRY,
+} from './index.js';
+import { whitespace, log, error, divider } from '../util/logger.js';
+import { isEtcherFile } from '../util/files.js';
+import { runHooks } from '../config/plugins.js';
+import { getConfig } from '../config/index.js';
+import { HOOK_TYPES } from '../constants.js';
 import { minify } from 'terser';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs';
 
-export const generateCoreFile = async (log: boolean = true) => {
+export const generateCoreFile = async (shouldLog: boolean = true) => {
     try {
-        if (log) console.log(chalk.white('Generating chisel...'));
-        console.log('');
+        if (shouldLog) log(chalk.white('Generating chisel...'));
+        whitespace();
 
         const config = await getConfig();
 
@@ -28,8 +32,8 @@ export const generateCoreFile = async (log: boolean = true) => {
         );
 
         for (const file of componentFiles) {
-            if (file.endsWith('.xtml')) {
-                console.log(chalk.cyanBright(`Transforming ${file}...`));
+            if (isEtcherFile(file)) {
+                log(chalk.cyanBright(`Transforming ${file}...`));
 
                 const componentName = file.replace('.xtml', '');
                 const componentData = await fs.promises.readFile(
@@ -37,24 +41,27 @@ export const generateCoreFile = async (log: boolean = true) => {
                     'utf8'
                 );
 
-                const PluginHookResult = await runHooks(
-                    'processComponent',
-                    `${componentData}`,
-                    file,
-                    path.join(config.input, 'components', file)
-                );
+                const PluginHookResult = await runHooks({
+                    hook: HOOK_TYPES.PROCESS_COMPONENT,
+                    args: [
+                        componentData,
+                        path.join(config.input, 'components', file),
+                    ],
+                });
 
                 processChunk(componentName, PluginHookResult || componentData);
 
-                runHooks(
-                    'generatedComponent',
-                    `${componentData}`,
-                    path.join(config.input, 'components', file)
-                );
+                runHooks({
+                    hook: HOOK_TYPES.GENERATED_COMPONENT,
+                    args: [
+                        PluginHookResult || componentData,
+                        path.join(config.input, 'components', file),
+                    ],
+                });
 
-                console.log(chalk.greenBright(`Transformed ${file}!`));
+                log(chalk.greenBright(`Transformed ${file}!`));
             } else {
-                console.log(
+                log(
                     chalk.yellow(`Skipping ${file} as it is not an XTML file.`)
                 );
             }
@@ -77,19 +84,12 @@ export const generateCoreFile = async (log: boolean = true) => {
             fs.mkdirSync(path.join(config.output));
         }
 
-        await fs.promises.writeFile(
-            path.join(config.output, '_chisel.js'),
-            (
-                await minify(chunks)
-            ).code
-        );
-
-        console.log('');
-        console.log(chalk.magenta('Finished Generating chisel!'));
+        whitespace();
+        log(chalk.magenta('Finished generating chunks!'));
 
         return true;
     } catch (e) {
-        console.error(chalk.red(`Error generating core file: ${e}`));
+        error(`Error generating core file: `, e);
     }
 };
 
@@ -113,34 +113,44 @@ const get = async (p: string) => {
 
 export const migratePages = async () => {
     try {
-        console.log(chalk.white('Migrating pages...'));
-        console.log('');
+        log(chalk.white('Migrating pages...'));
+        whitespace();
         const config = await getConfig();
 
         const files = await get(path.join(config.input, 'pages'));
 
         for (const file of files) {
-            console.log(chalk.cyanBright(`Migrating ${file.path}`));
+            log(chalk.cyanBright(`Migrating ${file.path}`));
 
             let fileData = await fs.promises.readFile(file.path, 'utf8');
 
-            const PluginHookResult = await runHooks(
-                'processPage',
-                `${fileData}`,
-                file.name,
-                file.path
-            );
+            const PluginHookResult = await runHooks({
+                hook: HOOK_TYPES.PROCESS_PAGE,
+                args: [`${fileData}`, file.path],
+            });
 
             fileData = PluginHookResult || fileData;
 
-            // meh... it's a replacement for a DOMParser but it can be improved
-            if (file.name.includes('.xtml')) {
+            if (isEtcherFile(file.name)) {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',
-                        `<script src="/_chisel.js"></script></body>`
+                        `<script type="module">
+                        ${(await minify(clientJS)).code}
+                        </script>
+                        </body>`
                     )
                 );
+
+                CHUNK_REGISTRY.forEach((chunk) => {
+                    if (!fileData.includes(chunk.chunkName)) return;
+
+                    fileData = fileData.replace(
+                        '</body>',
+                        `<script type="module" src="/@etcher/${chunk.chunkName}.js"></script>
+                        </body>`
+                    );
+                });
             }
 
             const computedAttributeRegex =
@@ -170,7 +180,7 @@ export const migratePages = async () => {
 
                     fileData = fileData.replace(
                         attr,
-                        `${attrName}="${attrValue}"`
+                        `${attrName}="${attrValue}" `
                     );
                 }
             }
@@ -188,20 +198,34 @@ export const migratePages = async () => {
 
             await fs.promises.writeFile(outputPath, fileData);
 
-            runHooks('generatedPage', `${fileData}`, file.path);
+            if (!fs.existsSync(path.join(config.output, '@etcher'))) {
+                fs.mkdirSync(path.join(config.output, '@etcher'));
+            }
 
-            console.log(chalk.greenBright(`Migrated ${file.path}!`));
+            runHooks({
+                hook: HOOK_TYPES.GENERATED_PAGE,
+                args: [fileData, file.path],
+            });
+
+            log(chalk.greenBright(`Migrated ${file.path}!`));
         }
 
-        console.log('');
-        console.log(chalk.magenta('Finished Migrating pages!'));
+        CHUNK_REGISTRY.forEach((chunk) => {
+            fs.writeFileSync(
+                path.join(config.output, `@etcher/${chunk.chunkName}.js`),
+                `window.etcher.transform(\`${chunk.data}\`, '${chunk.chunkName}');`
+            );
+        });
+
+        whitespace();
+        log(chalk.magenta('Finished Migrating pages!'));
     } catch (e) {
-        console.error(chalk.red(`Error migrating pages: ${e}`));
+        error(`Error migrating pages: `, e);
     }
 };
 
-let delay;
-let otherDelay;
+let componentsDelay: string | number | NodeJS.Timeout;
+let pagesDelay: string | number | NodeJS.Timeout;
 export const watch = async () => {
     const config = await getConfig();
 
@@ -210,41 +234,45 @@ export const watch = async () => {
     }
 
     fs.watch(path.join(config.input, 'components'), async () => {
-        if (delay) {
+        if (componentsDelay) {
             return;
         }
-        delay = setTimeout(async () => {
-            clearTimeout(delay);
-            delay = null;
+
+        componentsDelay = setTimeout(async () => {
+            clearTimeout(componentsDelay);
+            componentsDelay = null;
         }, 200);
 
-        console.log('');
-        console.log('---------------------------------------------');
-        console.log(
+        whitespace();
+        divider();
+        log(
             chalk.white('Detected change in components, regenerating chisel...')
         );
 
         resetChunks();
+
         await generateCoreFile();
         await migratePages();
 
-        console.log('---------------------------------------------');
+        divider();
     });
 
     fs.watch(path.join(config.input, 'pages'), async () => {
-        if (otherDelay) {
+        if (pagesDelay) {
             return;
         }
-        otherDelay = setTimeout(async () => {
-            clearTimeout(otherDelay);
-            otherDelay = null;
+
+        pagesDelay = setTimeout(async () => {
+            clearTimeout(pagesDelay);
+            pagesDelay = null;
         }, 200);
-        console.log('');
-        console.log('---------------------------------------------');
-        console.log(
-            chalk.white('Detected change in pages, regenerating pages...')
-        );
+
+        whitespace();
+        divider();
+        log(chalk.white('Detected change in pages, regenerating pages...'));
+
         await migratePages();
-        console.log('---------------------------------------------');
+
+        divider();
     });
 };

@@ -71,6 +71,34 @@ const parseExpression = (doc: any, rgx: RegExp) => {
     return res;
 };
 
+const parseBetweenPairs = (
+    index: number,
+    chars: [string, string],
+    doc: string
+) => {
+    let open = 0;
+    let close = 0;
+    let start = 0;
+    let end = 0;
+
+    for (let i = index; i < doc.length; i++) {
+        if (doc[i] === chars[0]) {
+            if (open === 0) {
+                start = i;
+            }
+            open++;
+        } else if (doc[i] === chars[1]) {
+            close++;
+            if (open === close) {
+                end = i;
+                break;
+            }
+        }
+    }
+
+    return doc.substring(start, end + 1);
+};
+
 const transform = (doc: string, name: string) => {
     class etcherElement extends HTMLElement {
         _listeners: {
@@ -100,14 +128,9 @@ const transform = (doc: string, name: string) => {
                 for (let i = 0; i < scripts.length; i++) {
                     const script = scripts[i];
 
-                    let scriptContent = script.replace(
-                        /<script>|<\/script>/g,
-                        ''
-                    );
-
-                    scriptContent = `const $ = {
+                    let scriptContent = `const $ = {
                         ...window._$etcherCore.c['${name}']._lexicalScope,
-                    };${scriptContent}`;
+                    };${script.replace(/<script>|<\/script>/g, '')}`;
 
                     const interpolated = scriptContent.replace(
                         /$([a-zA-Z0-9_]+)/g,
@@ -208,7 +231,7 @@ const transform = (doc: string, name: string) => {
                                                 `<!-- etcher:is ${p1.replace(
                                                     /([^a-zA-Z0-9])/g,
                                                     '\\$1'
-                                                )} -->.*<!-- etcher:ie -->`,
+                                                )} -->.*?<!-- etcher:ie -->`,
                                                 'gs'
                                             ),
                                             `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`
@@ -220,8 +243,6 @@ const transform = (doc: string, name: string) => {
                         get: null,
                         set: null,
                     };
-
-                    console.log(this._lexicalScope);
 
                     return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
                 }
@@ -240,7 +261,7 @@ const transform = (doc: string, name: string) => {
             for (let i = 0; i < atRules.length; i++) {
                 const rule = atRules[i];
 
-                const [_, type, expression] = rule;
+                const [_match, type, expression] = rule;
 
                 switch (type) {
                     case 'if': {
@@ -345,36 +366,37 @@ const transform = (doc: string, name: string) => {
 
             const eventAttrs = parseExpression(
                 doc,
-                /<([a-zA-Z0-9-]+)(\s*)@([a-zA-Z]*)={(.*?})}?([^<]*)>/gs
+                /<([a-zA-Z0-9-]+)([^<]*)@([a-zA-Z]*)=/gs
             );
 
             for (let i = 0; i < eventAttrs.length; i++) {
                 const attr = eventAttrs[i];
 
-                const [
-                    match,
-                    tagName,
-                    attrsBefore,
-                    event,
-                    expression,
-                    attrsAfter,
-                ] = attr;
+                const [match, tagName, attrsBefore, event] = attr;
 
-                doc = doc.replace(
-                    match,
-                    `<${tagName}${attrsBefore}${attrsAfter}>`
+                const expression = parseBetweenPairs(
+                    doc.indexOf(match) + match.length,
+                    ['{', '}'],
+                    doc
                 );
 
-                const innerHTML = doc.match(
-                    new RegExp(`<${tagName}.*?>(.*)<\\/${tagName}>`, 's')
-                )[1];
+                const innerHTML = parseBetweenPairs(
+                    doc.indexOf(match) + match.length + expression.length,
+                    ['>', '<'],
+                    doc
+                );
+
+                doc = doc.replace(
+                    `${match}${expression}`,
+                    `<${tagName}${attrsBefore}`
+                );
 
                 this._listeners[event] = [
                     ...(this._listeners[event] || []),
                     {
-                        value: expression,
+                        value: expression.replace(/^{/, '').replace(/}$/, ''),
                         tag: tagName,
-                        content: innerHTML,
+                        content: innerHTML.replace(/>/, '').replace(/</, ''),
                     },
                 ];
 
@@ -440,18 +462,12 @@ const transform = (doc: string, name: string) => {
                                 event.target as HTMLElement
                             )?.tagName?.toLowerCase?.() ===
                                 listener.tag?.toLowerCase?.() &&
-                            (event.target as HTMLElement)?.innerHTML ===
-                                listener.content;
+                            (event.target as HTMLElement)?.innerHTML.startsWith(
+                                listener.content
+                            );
 
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {
-                                const value = listener.value.replace(
-                                    /\(.*\)\s*=>\s*{(.*)}/s,
-                                    (match, p1) => {
-                                        return p1;
-                                    }
-                                );
-
                                 wrappedEval(
                                     '(' + listener.value + ')()',
                                     event,

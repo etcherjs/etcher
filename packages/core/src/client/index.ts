@@ -17,16 +17,30 @@ window._$etcherCore = {
     l: {},
 };
 
-const wrappedEval = (expression: string, arg?: any, namedArg?: string) => {
+const formatVariableName = (name: string) => {
+    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+};
+
+const wrappedEval = (
+    expression: string,
+    arg?: any,
+    namedArg?: string,
+    prepend?: string
+) => {
     if (arg && !namedArg) {
-        return Function(`"use strict";return (${expression})`)(arg);
+        return Function(
+            `"use strict"\n${prepend || ''}\n;return (${expression})`
+        )(arg);
     }
     if (arg && namedArg) {
-        return new Function(namedArg, `"use strict";return (${expression})`)(
-            arg
-        );
+        return new Function(
+            namedArg,
+            `"use strict"\n${prepend || ''}\n;return (${expression})`
+        )(arg);
     }
-    return Function(`"use strict";return (${expression})`)();
+    return Function(
+        `"use strict";\n${prepend || ''}\nreturn (${expression})`
+    )();
 };
 
 const startsWith = (str: string, regex: RegExp, offset = 0) => {
@@ -66,7 +80,7 @@ const transform = (doc: string, name: string) => {
                 content: string;
             }[];
         } = {};
-        _states = {};
+        _lexicalScope: Record<string, any> = {};
         constructor() {
             super();
 
@@ -78,10 +92,14 @@ const transform = (doc: string, name: string) => {
                 for (let i = 0; i < scripts.length; i++) {
                     const script = scripts[i];
 
-                    const scriptContent = script.replace(
+                    let scriptContent = script.replace(
                         /<script>|<\/script>/g,
                         ''
                     );
+
+                    scriptContent = `const $ = {
+                        ...window._$etcherCore.c['${name}']._lexicalScope,
+                    };${scriptContent}`;
 
                     const interpolated = scriptContent.replace(
                         /$([a-zA-Z0-9_]+)/g,
@@ -131,8 +149,6 @@ const transform = (doc: string, name: string) => {
                     );
 
                     this._$etcherCoreInstance.scripts.push(func);
-
-                    func();
                 }
             }
 
@@ -187,7 +203,7 @@ const transform = (doc: string, name: string) => {
                 const [_, type, expression] = rule;
 
                 switch (type) {
-                    case 'if':
+                    case 'if': {
                         const expressionResult = wrappedEval(expression);
 
                         if (!expressionResult) {
@@ -209,7 +225,8 @@ const transform = (doc: string, name: string) => {
                             '$2'
                         );
                         break;
-                    case 'for':
+                    }
+                    case 'for': {
                         const [_, value, iterable] =
                             expression.match(/(.*) in (.*)/);
 
@@ -232,7 +249,17 @@ const transform = (doc: string, name: string) => {
                         );
 
                         break;
-                    case 'loop':
+                    }
+                    case 'state': {
+                        const [_, name, value] = expression.match(/(.*)=(.*)/);
+
+                        this._lexicalScope[formatVariableName(name.trim())] =
+                            wrappedEval(value.trim());
+
+                        doc = doc.replace(/{@state (.*?)}/s, '');
+                        break;
+                    }
+                    case 'loop': {
                         const num = parseInt(expression);
 
                         let loopContent = doc.match(
@@ -254,6 +281,7 @@ const transform = (doc: string, name: string) => {
                         );
 
                         break;
+                    }
                 }
             }
 
@@ -296,6 +324,12 @@ const transform = (doc: string, name: string) => {
             });
 
             shadow.append(...parsed.body.children);
+
+            for (let i = 0; i < this._$etcherCoreInstance.scripts.length; i++) {
+                const script = this._$etcherCoreInstance.scripts[i];
+
+                script();
+            }
 
             for (let i = 0; i < this.shadowRoot.styleSheets?.length; i++) {
                 const style = this.shadowRoot.styleSheets[i];
@@ -340,10 +374,20 @@ const transform = (doc: string, name: string) => {
                                     }
                                 );
 
-                                wrappedEval(val, e);
+                                wrappedEval(
+                                    val,
+                                    e,
+                                    null,
+                                    `const $ = {...window._$etcherCore.c['${name}']._lexicalScope};`
+                                );
                             }
 
-                            wrappedEval(listener.value, e);
+                            wrappedEval(
+                                listener.value,
+                                e,
+                                null,
+                                `const $ = {...window._$etcherCore.c['${name}']._lexicalScope};`
+                            );
                         }
                     }
                 });

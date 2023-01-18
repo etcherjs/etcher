@@ -114,11 +114,30 @@ const transform = (doc, name) => {
                     value = wrappedEval(value);
                     return value;
                 }
+                if (expression === '$') {
+                    let ret = String(wrappedEval(p1, this._lexicalScope, '$'));
+                    this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')] = {
+                        accessors: [
+                            [
+                                this,
+                                (_, value) => {
+                                    this.shadowRoot.innerHTML =
+                                        this.shadowRoot.innerHTML.replace(new RegExp(`<!-- etcher:is ${p1.replace(/([^a-zA-Z0-9])/g, '\\$1')} -->.*<!-- etcher:ie -->`, 'gs'), `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);
+                                },
+                            ],
+                        ],
+                        _value: null,
+                        get: null,
+                        set: null,
+                    };
+                    console.log(this._lexicalScope);
+                    return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
+                }
                 if (this.hasAttribute(expression)) {
                     let value = this.getAttribute(expression);
-                    return value;
+                    return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
                 }
-                return `{{${p1}}}`;
+                return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
             });
             const atRules = parseExpression(doc, /{@([a-zA-Z]*) (.*)}/g);
             for (let i = 0; i < atRules.length; i++) {
@@ -153,8 +172,24 @@ const transform = (doc, name) => {
                     }
                     case 'state': {
                         const [_, name, value] = expression.match(/(.*)=(.*)/);
-                        this._lexicalScope[formatVariableName(name.trim())] =
-                            wrappedEval(value.trim());
+                        const varName = formatVariableName(name.trim());
+                        this._lexicalScope[varName] = {
+                            _value: wrappedEval(value.trim()),
+                            accessors: [
+                                ...(this._lexicalScope[varName]?.accessors ||
+                                    []),
+                            ],
+                            get() {
+                                return this._value;
+                            },
+                            set(value) {
+                                const prev = this._value;
+                                this._value = value;
+                                for (const accessor of this.accessors) {
+                                    accessor[1](prev, value);
+                                }
+                            },
+                        };
                         doc = doc.replace(/{@state (.*?)}/s, '');
                         break;
                     }
@@ -191,6 +226,13 @@ const transform = (doc, name) => {
                 mode: 'open',
             });
             shadow.append(...parsed.body.children);
+            for (let i = 0; i < Object.entries(this._lexicalScope).length; i++) {
+                const [_, s] = Object.entries(this._lexicalScope)[i];
+                for (let j = 0; j < s.accessors.length; j++) {
+                    const [_, accessor] = s.accessors[j];
+                    accessor(s.get(), s.get());
+                }
+            }
             for (let i = 0; i < this._$etcherCoreInstance.scripts.length; i++) {
                 const script = this._$etcherCoreInstance.scripts[i];
                 script();

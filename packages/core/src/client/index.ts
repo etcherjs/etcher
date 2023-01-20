@@ -18,7 +18,7 @@ window._$etcherCore = {
 };
 
 const formatVariableName = (name: string) => {
-    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+    return name.replace(/\W/g, '_');
 };
 
 const wrappedEval = (
@@ -50,7 +50,7 @@ const startsWith = (str: string, regex: RegExp, offset = 0) => {
 };
 
 const parseJSON = (obj: string) => {
-    obj = obj.replace(/,\s*(?=})/, '');
+    obj = obj.replace(/,(?=\s*})/, '');
     obj = obj.replace(/'/g, '"');
     obj = obj.replace(/([a-zA-Z0-9_]+):/g, '"$1":');
 
@@ -133,7 +133,7 @@ const transform = (doc: string, name: string) => {
                     };${script.replace(/<script>|<\/script>/g, '')}`;
 
                     const interpolated = scriptContent.replace(
-                        /$([a-zA-Z0-9_]+)/g,
+                        /\$([a-zA-Z0-9_]+)/g,
                         (match: any, p1: string) => {
                             if (this.hasAttribute('#' + p1.trim())) {
                                 let value = this.getAttribute('#' + p1.trim());
@@ -183,7 +183,7 @@ const transform = (doc: string, name: string) => {
                 }
             }
 
-            doc = doc.replaceAll(/\{\{(.*)\}\}/g, (match: any, p1: string) => {
+            doc = doc.replaceAll(/\{\{(.*?)\}\}/g, (match: any, p1: string) => {
                 const expression = p1.split('.')[0].trim();
 
                 if (this.hasAttribute('#' + expression)) {
@@ -229,7 +229,7 @@ const transform = (doc: string, name: string) => {
                                         this.shadowRoot.innerHTML.replace(
                                             new RegExp(
                                                 `<!-- etcher:is ${p1.replace(
-                                                    /([^a-zA-Z0-9])/g,
+                                                    /(\W)/g,
                                                     '\\$1'
                                                 )} -->.*?<!-- etcher:ie -->`,
                                                 'gs'
@@ -256,7 +256,7 @@ const transform = (doc: string, name: string) => {
                 return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
             });
 
-            const atRules = parseExpression(doc, /{@([a-zA-Z]*) (.*)}/g);
+            const atRules = parseExpression(doc, /{@([a-zA-Z]*?) (.*)}/g);
 
             for (let i = 0; i < atRules.length; i++) {
                 const rule = atRules[i];

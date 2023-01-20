@@ -3,7 +3,7 @@ window._$etcherCore = {
     l: {},
 };
 const formatVariableName = (name) => {
-    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+    return name.replace(/\W/g, '_');
 };
 const wrappedEval = (expression, arg, namedArg, prepend) => {
     if (arg && !namedArg) {
@@ -20,7 +20,7 @@ const startsWith = (str, regex, offset = 0) => {
     return !!result;
 };
 const parseJSON = (obj) => {
-    obj = obj.replace(/,\s*(?=})/, '');
+    obj = obj.replace(/,(?=\s*})/, '');
     obj = obj.replace(/'/g, '"');
     obj = obj.replace(/([a-zA-Z0-9_]+):/g, '"$1":');
     return JSON.parse(obj);
@@ -70,7 +70,7 @@ const transform = (doc, name) => {
                     let scriptContent = `const $ = {
                         ...window._$etcherCore.c['${name}']._lexicalScope,
                     };${script.replace(/<script>|<\/script>/g, '')}`;
-                    const interpolated = scriptContent.replace(/$([a-zA-Z0-9_]+)/g, (match, p1) => {
+                    const interpolated = scriptContent.replace(/\$([a-zA-Z0-9_]+)/g, (match, p1) => {
                         if (this.hasAttribute('#' + p1.trim())) {
                             let value = this.getAttribute('#' + p1.trim());
                             value = value.replaceAll('&quot;', '"');
@@ -106,7 +106,7 @@ const transform = (doc, name) => {
                     this._$etcherCoreInstance.scripts.push(func);
                 }
             }
-            doc = doc.replaceAll(/\{\{(.*)\}\}/g, (match, p1) => {
+            doc = doc.replaceAll(/\{\{(.*?)\}\}/g, (match, p1) => {
                 const expression = p1.split('.')[0].trim();
                 if (this.hasAttribute('#' + expression)) {
                     let value = this.getAttribute('#' + expression);
@@ -143,7 +143,7 @@ const transform = (doc, name) => {
                                 this,
                                 (_, value) => {
                                     this.shadowRoot.innerHTML =
-                                        this.shadowRoot.innerHTML.replace(new RegExp(`<!-- etcher:is ${p1.replace(/([^a-zA-Z0-9])/g, '\\$1')} -->.*?<!-- etcher:ie -->`, 'gs'), `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);
+                                        this.shadowRoot.innerHTML.replace(new RegExp(`<!-- etcher:is ${p1.replace(/(\W)/g, '\\$1')} -->.*?<!-- etcher:ie -->`, 'gs'), `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);
                                 },
                             ],
                         ],
@@ -159,7 +159,7 @@ const transform = (doc, name) => {
                 }
                 return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
             });
-            const atRules = parseExpression(doc, /{@([a-zA-Z]*) (.*)}/g);
+            const atRules = parseExpression(doc, /{@([a-zA-Z]*?) (.*)}/g);
             for (let i = 0; i < atRules.length; i++) {
                 const rule = atRules[i];
                 const [_match, type, expression] = rule;

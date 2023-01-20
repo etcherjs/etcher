@@ -15,10 +15,11 @@ import { minify } from 'terser';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs';
+import { dirname } from '../util/node.js';
 
 export const generateCoreFile = async (shouldLog: boolean = true) => {
     try {
-        if (shouldLog) log(chalk.white('Generating chisel...'));
+        if (shouldLog) log(chalk.white('Generating chunks...'));
         whitespace();
 
         const config = await getConfig();
@@ -226,8 +227,32 @@ export const migratePages = async () => {
 
 let componentsDelay: string | number | NodeJS.Timeout;
 let pagesDelay: string | number | NodeJS.Timeout;
+let clientDelay: string | number | NodeJS.Timeout;
 export const watch = async () => {
     const config = await getConfig();
+
+    fs.watch(path.join(dirname(import.meta), 'client.js'), async () => {
+        if (clientDelay) {
+            return;
+        }
+
+        clientDelay = setTimeout(async () => {
+            clearTimeout(clientDelay);
+            clientDelay = null;
+        }, 200);
+
+        divider();
+
+        log(
+            chalk.magenta(
+                'Detected change in client.js, regenerating chunks...'
+            )
+        );
+
+        await migratePages();
+
+        divider();
+    });
 
     if (!fs.existsSync(config.input)) {
         throw new Error('Source directory does not exist!');
@@ -246,7 +271,7 @@ export const watch = async () => {
         whitespace();
         divider();
         log(
-            chalk.white('Detected change in components, regenerating chisel...')
+            chalk.white('Detected change in components, regenerating chunks...')
         );
 
         resetChunks();

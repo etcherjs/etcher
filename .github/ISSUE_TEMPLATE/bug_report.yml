@@ -1,0 +1,48 @@
+name: "Bug report"
+description: Create a bug report to help us imporove Etcher.
+labels: ["bug", "needs confirmation"]
+body:
+    - type: dropdown
+      id: packages
+      attributes:
+          label: Impacted Packages
+          description: What packages are effected by this issue?
+          options:
+              - "@etcher/core"
+              - "etcher-vscode"
+              - "create-etcher"
+      validations:
+          required: true
+    - type: textarea
+      id: bug-description
+      attributes:
+          label: Describe the bug
+          description: A clear and concise description of what the bug is.
+          placeholder: Bug description...
+      validations:
+          required: true
+    - type: textarea
+      id: reproduce
+      attributes:
+          label: To Reproduce
+          description: Steps to reproduce the behavior.
+          placeholder: |
+              1. Go to '...'
+              2. Click on '....'
+              3. Scroll down to '....'
+              4. See error
+      validations:
+          required: true
+    - type: textarea
+      id: behavior
+      attributes:
+          label: Expected behavior
+          description: A clear and concise description of what you expected to happen.
+          placeholder: Expected behavior...
+    - type: textarea
+      id: logs
+      attributes:
+          label: Logs
+          description: Any relevant node/browser/system logs.
+          render: shell
+          placeholder: Logs...

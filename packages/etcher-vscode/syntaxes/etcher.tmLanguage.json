@@ -14,6 +14,9 @@
         "html": {
             "patterns": [
                 {
+                    "include": "#embedded"
+                },
+                {
                     "include": "#comment"
                 },
                 {
@@ -24,6 +27,201 @@
                 },
                 {
                     "include": "#text"
+                }
+            ]
+        },
+        "embedded": {
+            "patterns": [
+                {
+                    "begin": "(<)(style)(.*?lang=['\"]scss['\"].*?)(>)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "patterns": [
+                                {
+                                    "include": "#attribute"
+                                }
+                            ]
+                        },
+                        "4": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "end": "(</)(style)(>)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "source.css.scss"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(<)(style)(.*?lang=['\"]less['\"].*?)(>)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "patterns": [
+                                {
+                                    "include": "#attribute"
+                                }
+                            ]
+                        },
+                        "4": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "end": "(</)(style)(>)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "source.css.less"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(<)(style)(.*?lang=['\"]stylus['\"].*?)(>)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "patterns": [
+                                {
+                                    "include": "#attribute"
+                                }
+                            ]
+                        },
+                        "4": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "end": "(</)(style)(>)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+
+                        "3": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "source.stylus"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(<)(style)(.*?)(>)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "patterns": [
+                                {
+                                    "include": "#attribute"
+                                }
+                            ]
+                        },
+                        "4": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "end": "(</)(style)(.*?)(>)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "source.css"
+                        }
+                    ]
+                },
+                {
+                    "begin": "(<)(script)(.*?)(>)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "patterns": [
+                                {
+                                    "include": "#attribute"
+                                }
+                            ]
+                        },
+                        "4": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "end": "(</)(script)(>)",
+                    "endCaptures": {
+                        "1": {
+                            "name": "punctuation.definition.tag.begin.html"
+                        },
+                        "2": {
+                            "name": "entity.name.tag.html"
+                        },
+                        "3": {
+                            "name": "punctuation.definition.tag.end.html"
+                        }
+                    },
+                    "patterns": [
+                        {
+                            "include": "source.js"
+                        }
+                    ]
                 }
             ]
         },
@@ -256,14 +454,8 @@
                 },
                 {
                     "include": "#special-attribute-values"
-                },
-                {
-                    "include": "#embedded"
                 }
             ]
-        },
-        "embedded": {
-            "patterns": []
         },
         "interpolation": {
             "name": "meta.interpolation.etcher",

@@ -1,6 +1,8 @@
-<div align="center" style="margin-bottom: 20px">
+<div align="center">
   <img src="https://etcherjs.vercel.app/assets/etcher.png" width="100"/>
 </div>
+
+<br/>
 
 [size-img]: https://img.shields.io/bundlephobia/minzip/@etcher/core?color=d34ebb&style=for-the-badge
 [latest-img]: https://img.shields.io/npm/v/@etcher/core/latest?color=d34ebb&label=latest&style=for-the-badge

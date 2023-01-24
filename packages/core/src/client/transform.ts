@@ -26,6 +26,7 @@ export const EtcherElement = class extends HTMLElement {
             accessors: [any, (prev: any, value: any) => void][];
             get: () => any;
             set: (value: any) => void;
+            subscribe: (callback: (prev: any, value: any) => void) => void;
         }
     > = {};
 
@@ -188,6 +189,7 @@ export const EtcherElement = class extends HTMLElement {
                         _value: null,
                         get: null,
                         set: null,
+                        subscribe: null,
                     };
 
                     return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
@@ -284,6 +286,9 @@ export const EtcherElement = class extends HTMLElement {
                             for (const accessor of this.accessors) {
                                 accessor[1](prev, value);
                             }
+                        },
+                        subscribe(callback: (prev: any, next: any) => void) {
+                            this.accessors.push([this, callback]);
                         },
                     };
 

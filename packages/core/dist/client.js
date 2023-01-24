@@ -257,6 +257,7 @@ const EtcherElement = class extends HTMLElement {
                     _value: null,
                     get: null,
                     set: null,
+                    subscribe: null,
                 };
                 return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
             }
@@ -313,6 +314,9 @@ const EtcherElement = class extends HTMLElement {
                             for (const accessor of this.accessors) {
                                 accessor[1](prev, value);
                             }
+                        },
+                        subscribe(callback) {
+                            this.accessors.push([this, callback]);
                         },
                     };
                     component_body = component_body.replace(/{@state (.*?)}/s, '');

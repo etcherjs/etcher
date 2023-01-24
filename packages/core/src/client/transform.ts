@@ -56,6 +56,8 @@ export const EtcherElement = class extends HTMLElement {
                 const interpolated = scriptContent.replace(
                     /\$([a-zA-Z0-9_]+)/g,
                     (match: any, p1: string) => {
+                        if (match === '$etcherCore') return match;
+
                         if (this.hasAttribute('#' + p1.trim())) {
                             let value = this.getAttribute('#' + p1.trim());
 

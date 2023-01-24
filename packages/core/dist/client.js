@@ -174,6 +174,8 @@ const EtcherElement = class extends HTMLElement {
                         ...window._$etcherCore.c['${component_id}']._lexicalScope,
                     };${script.replace(/<script>|<\/script>/g, '')}`;
                 const interpolated = scriptContent.replace(/\$([a-zA-Z0-9_]+)/g, (match, p1) => {
+                    if (match === '$etcherCore')
+                        return match;
                     if (this.hasAttribute('#' + p1.trim())) {
                         let value = this.getAttribute('#' + p1.trim());
                         value = replaceEntities(value);

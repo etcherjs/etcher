@@ -209,7 +209,7 @@ export const migratePages = async () => {
         }
 
         if (fs.existsSync(path.join(config.output, '@etcher'))) {
-            fs.rmdirSync(path.join(config.output, '@etcher'), {
+            fs.rmSync(path.join(config.output, '@etcher'), {
                 recursive: true,
             });
         }

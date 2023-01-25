@@ -138,6 +138,7 @@ export const migratePages = async () => {
                         '</body>',
                         `<script type="module">
                         ${(await minify(clientJS)).code}
+                        //# sourceURL=client.js
                         </script>
                         </body>`
                     )
@@ -199,10 +200,6 @@ export const migratePages = async () => {
 
             await fs.promises.writeFile(outputPath, fileData);
 
-            if (!fs.existsSync(path.join(config.output, '@etcher'))) {
-                fs.mkdirSync(path.join(config.output, '@etcher'));
-            }
-
             runHooks({
                 hook: HOOK_TYPES.GENERATED_PAGE,
                 args: [fileData, file.path],
@@ -211,10 +208,18 @@ export const migratePages = async () => {
             log(chalk.greenBright(`Migrated ${file.path}!`));
         }
 
+        if (fs.existsSync(path.join(config.output, '@etcher'))) {
+            fs.rmdirSync(path.join(config.output, '@etcher'), {
+                recursive: true,
+            });
+        }
+
+        fs.mkdirSync(path.join(config.output, '@etcher'));
+
         CHUNK_REGISTRY.forEach((chunk) => {
             fs.writeFileSync(
                 path.join(config.output, `@etcher/${chunk.chunkName}.js`),
-                `window.etcher.transform(\`${chunk.data}\`, '${chunk.chunkName}');`
+                `window.etcher.transform(\`${chunk.data}\`, '${chunk.chunkName}');\n\n//# sourceURL=${chunk.chunkName}.js`
             );
         });
 

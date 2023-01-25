@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { lightRed, lightYellow, green } from 'kolorist';
+import { lightRed, lightYellow, green, lightMagenta } from 'kolorist';
 import prompts from 'prompts';
 import path from 'path';
 import fs from 'fs';
@@ -115,6 +115,10 @@ const questions = [
                 title: 'Hello World',
                 value: 'hello-world',
             },
+            {
+                title: 'Empty Project',
+                value: 'blank',
+            },
         ],
     },
 ];
@@ -129,7 +133,7 @@ const createProject = async () => {
         fs.mkdirSync(projectPath);
 
         const packageJson = {
-            name: packageName,
+            name: packageName || name,
             description: '',
             version: '0.0.1',
             private: true,
@@ -168,7 +172,11 @@ const createProject = async () => {
         copyDirectory(templatePath, path.resolve(projectPath, 'src'), true);
 
         console.log('');
-        console.log(green(`Your project has been created!`));
+        console.log(
+            green(
+                `Your new ${lightMagenta('etcher')} project has been created!`
+            )
+        );
         console.log('');
         console.log(`To get started, run the following commands:`);
         console.log('');

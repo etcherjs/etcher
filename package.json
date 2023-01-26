@@ -2,7 +2,13 @@
     "name": "etcher",
     "version": "1.0.0",
     "description": "Create reusable web components without touching a single line of javascript.",
-    "keywords": [],
     "author": "TheCommieAxolotl",
-    "license": "MIT"
+    "scripts": {
+        "lint": "prettier --check .",
+        "format": "prettier --write ."
+    },
+    "license": "MIT",
+    "dependencies": {
+        "prettier": "^2.8.3"
+    }
 }

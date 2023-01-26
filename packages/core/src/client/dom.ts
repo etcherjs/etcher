@@ -6,21 +6,14 @@ export const html = (body: string): HTMLCollection => {
     return template.content.children;
 };
 
-export const replace = (
-    element: Element | HTMLElement,
-    find: string,
-    replace: string
-): Element | HTMLElement => {
+export const replace = (element: Element | HTMLElement, find: string, replace: string): Element | HTMLElement => {
     const html = element.innerHTML;
 
     const index = html.indexOf(find);
 
     if (index < 0) return;
 
-    element.innerHTML =
-        html.substring(0, index) +
-        replace +
-        html.substring(index + find.length);
+    element.innerHTML = html.substring(0, index) + replace + html.substring(index + find.length);
 
     return element;
 };
@@ -74,17 +67,10 @@ export const selector = (element: Element | HTMLElement): string => {
 
         const selector = `${tag}${id}${classes}`;
 
-        if (
-            element.parentElement &&
-            element.parentElement?.children?.length !== 1
-        ) {
-            const index = Array.from(element.parentElement.children).indexOf(
-                element
-            );
+        if (element.parentElement && element.parentElement?.children?.length !== 1) {
+            const index = Array.from(element.parentElement.children).indexOf(element);
 
-            path = path
-                ? `${selector}:nth-child(${index + 1}) > ${path}`
-                : `${selector}:nth-child(${index + 1})`;
+            path = path ? `${selector}:nth-child(${index + 1}) > ${path}` : `${selector}:nth-child(${index + 1})`;
         } else {
             path = path ? `${selector} > ${path}` : selector;
         }

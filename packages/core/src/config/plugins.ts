@@ -43,33 +43,23 @@ export const runHooks = async (params: PluginHookParams) => {
                         break;
                     case HOOK_TYPES.PROCESS_CHUNK:
                         finalValue =
-                            (await plugin.hooks[HOOK_TYPES.PROCESS_CHUNK](
-                                finalValue || params.args[0]
-                            )) || null;
+                            (await plugin.hooks[HOOK_TYPES.PROCESS_CHUNK](finalValue || params.args[0])) || null;
 
                         break;
                     case HOOK_TYPES.GENERATED_COMPONENT:
-                        plugin.hooks[HOOK_TYPES.GENERATED_COMPONENT](
-                            ...(params.args as [string, string])
-                        );
+                        plugin.hooks[HOOK_TYPES.GENERATED_COMPONENT](...(params.args as [string, string]));
                         break;
                     case HOOK_TYPES.GENERATED_PAGE:
-                        plugin.hooks[HOOK_TYPES.GENERATED_PAGE](
-                            ...(params.args as [string, string])
-                        );
+                        plugin.hooks[HOOK_TYPES.GENERATED_PAGE](...(params.args as [string, string]));
                         break;
                     case HOOK_TYPES.GENERATED_CHUNK:
-                        plugin.hooks[HOOK_TYPES.GENERATED_CHUNK](
-                            ...(params.args as [Chunk])
-                        );
+                        plugin.hooks[HOOK_TYPES.GENERATED_CHUNK](...(params.args as [Chunk]));
                         break;
                 }
             }
         } catch (e) {
             console.error(
-                chalk.red(
-                    `Encountered error while running hook '${params.hook}' from plugin '${plugin.name}': ${e}`
-                )
+                chalk.red(`Encountered error while running hook '${params.hook}' from plugin '${plugin.name}': ${e}`)
             );
         }
     }

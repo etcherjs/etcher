@@ -12,11 +12,7 @@ export const parseExpression = (doc: any, rgx: RegExp) => {
     return res;
 };
 
-export const parseBetweenPairs = (
-    index: number,
-    chars: [string, string],
-    doc: string
-) => {
+export const parseBetweenPairs = (index: number, chars: [string, string], doc: string) => {
     let open = 0;
     let close = 0;
     let start = 0;

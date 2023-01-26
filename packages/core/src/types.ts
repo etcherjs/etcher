@@ -8,14 +8,8 @@ export type Chunk = {
 export type ExternalPluginOptions = {
     name: string;
     hooks: {
-        processComponent?: (
-            code: string,
-            path: string
-        ) => (string | null) | Promise<string | null>;
-        processPage?: (
-            code: string,
-            path: string
-        ) => (string | null) | Promise<string | null>;
+        processComponent?: (code: string, path: string) => (string | null) | Promise<string | null>;
+        processPage?: (code: string, path: string) => (string | null) | Promise<string | null>;
         processChunk?: (chunk: Chunk) => (Chunk | null) | Promise<Chunk | null>;
 
         generatedComponent?: (code: string, path: string) => void;

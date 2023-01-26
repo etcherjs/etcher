@@ -1,7 +1,7 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
 const findConfig = (
     path: string
@@ -9,7 +9,7 @@ const findConfig = (
     path: string;
     rootPath: string;
 } | null => {
-    const testPath = path + "/etcher.config.js";
+    const testPath = path + '/etcher.config.js';
 
     if (fs.existsSync(testPath)) {
         return {
@@ -18,32 +18,32 @@ const findConfig = (
         };
     }
 
-    if (path === "/") {
+    if (path === '/') {
         return null;
     }
 
-    return findConfig(path.substring(0, path.lastIndexOf("/")));
+    return findConfig(path.substring(0, path.lastIndexOf('/')));
 };
 
 const closestPackage = (path: string): string | null => {
-    const testPath = path + "/package.json";
+    const testPath = path + '/package.json';
 
     if (fs.existsSync(testPath)) {
         return path;
     }
 
-    if (path === "/") {
+    if (path === '/') {
         return null;
     }
 
-    return closestPackage(path.substring(0, path.lastIndexOf("/")));
+    return closestPackage(path.substring(0, path.lastIndexOf('/')));
 };
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log("Active");
+    console.log('Active');
 
     const provider = vscode.languages.registerCompletionItemProvider(
-        "etcher",
+        'etcher',
         {
             provideCompletionItems(document, position) {
                 const editor = vscode.window.activeTextEditor;
@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
                     } = null;
 
                     if (config) {
-                        const data = fs.readFileSync(config.path, "utf8");
+                        const data = fs.readFileSync(config.path, 'utf8');
 
                         const exported = data.match(/export\s+default\s+(?:defineConfig\()?({[\s\S]*})\)?/);
 
@@ -70,32 +70,40 @@ export function activate(context: vscode.ExtensionContext) {
                                   exported[1]
                                       .replace(/(\w+):/g, '"$1":')
                                       .replace(/'/g, '"')
-                                      .replace(/,\s*}/g, "}")
+                                      .replace(/,\s*}/g, '}')
                               )
                             : {
-                                  input: "src",
-                                  output: "public",
+                                  input: 'src',
+                                  output: 'public',
                               };
                     }
 
                     if (!configObj) {
                         configObj = {
-                            input: "src",
-                            output: "public",
+                            input: 'src',
+                            output: 'public',
                         };
                     }
 
-                    const componentsDir = path.join(config?.rootPath || closestPackage(editor.document.fileName) || "", configObj?.input || "src", "components");
+                    const componentsDir = path.join(
+                        config?.rootPath || closestPackage(editor.document.fileName) || '',
+                        configObj?.input || 'src',
+                        'components'
+                    );
 
                     const files = fs.readdirSync(componentsDir);
 
                     const items = files.map((file) => {
-                        const name = file.replace(".xtml", "");
+                        const name = file.replace('.xtml', '');
 
                         const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.Class);
-                        item.insertText = new vscode.SnippetString(`${char === "<" ? "" : "<"}etcher-${name}>$1</etcher-${name}>`);
+                        item.insertText = new vscode.SnippetString(
+                            `${char === '<' ? '' : '<'}etcher-${name}>$1</etcher-${name}>`
+                        );
                         item.documentation = new vscode.MarkdownString(
-                            `Inserts a \`<${name}/>\` component, which is defined at [\`${configObj?.input || "src"}/components/${file}\`](file://${path.join(componentsDir, file)}).`
+                            `Inserts a \`<${name}/>\` component, which is defined at [\`${
+                                configObj?.input || 'src'
+                            }/components/${file}\`](file://${path.join(componentsDir, file)}).`
                         );
 
                         return item;
@@ -105,13 +113,13 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             },
         },
-        "<",
-        ""
+        '<',
+        ''
     );
 
     context.subscriptions.push(provider);
 
-    let disposable = vscode.commands.registerCommand("etcher-vscode.createComponent", () => {
+    let disposable = vscode.commands.registerCommand('etcher-vscode.createComponent', () => {
         const editor = vscode.window.activeTextEditor;
 
         if (editor) {
@@ -120,11 +128,11 @@ export function activate(context: vscode.ExtensionContext) {
 
             vscode.window
                 .showInputBox({
-                    placeHolder: "MyComponent.xtml",
-                    prompt: "Enter file name",
+                    placeHolder: 'MyComponent.xtml',
+                    prompt: 'Enter file name',
                     validateInput: (value) => {
-                        if (!value.endsWith(".xtml")) {
-                            return "File name must end with .xtml";
+                        if (!value.endsWith('.xtml')) {
+                            return 'File name must end with .xtml';
                         }
                     },
                 })
@@ -140,10 +148,10 @@ export function activate(context: vscode.ExtensionContext) {
                         if (config) {
                             const data = await import(config.path);
 
-                            const srcPath = path.join(config.rootPath, data?.default?.srcDir || "src", "components");
+                            const srcPath = path.join(config.rootPath, data?.default?.srcDir || 'src', 'components');
 
                             if (!fs.existsSync(srcPath)) {
-                                vscode.window.showErrorMessage("Could not find src/components directory");
+                                vscode.window.showErrorMessage('Could not find src/components directory');
                             }
 
                             fs.writeFileSync(path.join(srcPath, component.path), component.content);
@@ -158,13 +166,13 @@ export function activate(context: vscode.ExtensionContext) {
                         const packagePath = closestPackage(editor.document.fileName);
 
                         if (!packagePath) {
-                            vscode.window.showErrorMessage("Could not find a component directory");
+                            vscode.window.showErrorMessage('Could not find a component directory');
                         }
 
-                        const srcPath = path.join(packagePath as string, "src", "components");
+                        const srcPath = path.join(packagePath as string, 'src', 'components');
 
                         if (!fs.existsSync(srcPath)) {
-                            vscode.window.showErrorMessage("Could not find src/components directory");
+                            vscode.window.showErrorMessage('Could not find src/components directory');
                         }
 
                         fs.writeFileSync(path.join(srcPath, component.path), component.content);

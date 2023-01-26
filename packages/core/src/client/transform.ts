@@ -1,11 +1,4 @@
-import {
-    parseJSON,
-    formatVariableName,
-    wrappedEval,
-    startsWith,
-    loopMatches,
-    replaceEntities,
-} from './util';
+import { parseJSON, formatVariableName, wrappedEval, startsWith, loopMatches, replaceEntities } from './util';
 import { parseExpression, parseBetweenPairs } from './parse';
 import { html, replace, closest, selector } from './dom';
 import { error, warn } from './log';
@@ -63,173 +56,141 @@ export const EtcherElement = class extends HTMLElement {
                         ...window._$etcherCore.c['${component_id}']._lexicalScope,
                     };${script.replace(/<script>|<\/script>/g, '')}`;
 
-                    const interpolated = scriptContent.replace(
-                        /\$([a-zA-Z0-9_]+)/g,
-                        (match: any, p1: string) => {
-                            if (match === '$etcherCore') return match;
+                    const interpolated = scriptContent.replace(/\$([a-zA-Z0-9_]+)/g, (match: any, p1: string) => {
+                        if (match === '$etcherCore') return match;
 
-                            if (this.hasAttribute('#' + p1.trim())) {
-                                let value = this.getAttribute('#' + p1.trim());
+                        if (this.hasAttribute('#' + p1.trim())) {
+                            let value = this.getAttribute('#' + p1.trim());
 
-                                value = replaceEntities(value);
+                            value = replaceEntities(value);
 
-                                if (
-                                    value.startsWith('{') ||
-                                    value.startsWith('[')
-                                ) {
+                            if (value.startsWith('{') || value.startsWith('[')) {
+                                try {
+                                    value = JSON.parse(value);
+                                } catch (e) {
                                     try {
-                                        value = JSON.parse(value);
+                                        value = parseJSON(value);
                                     } catch (e) {
-                                        try {
-                                            value = parseJSON(value);
-                                        } catch (e) {
-                                            error(
-                                                `Error parsing JSON in computed attribute #${p1.trim()}:`,
-                                                e
-                                            );
-                                        }
+                                        error(`Error parsing JSON in computed attribute #${p1.trim()}:`, e);
                                     }
                                 }
-
-                                value = wrappedEval(value);
-
-                                return value;
                             }
 
-                            if (this.hasAttribute(p1.trim())) {
-                                let value = this.getAttribute(p1.trim());
+                            value = wrappedEval(value);
 
-                                return value;
-                            }
-
-                            return p1;
+                            return value;
                         }
-                    );
 
-                    const func = wrappedEval(
-                        '(async () => { ' + interpolated + ' })'
-                    );
+                        if (this.hasAttribute(p1.trim())) {
+                            let value = this.getAttribute(p1.trim());
+
+                            return value;
+                        }
+
+                        return p1;
+                    });
+
+                    const func = wrappedEval('(async () => { ' + interpolated + ' })');
 
                     this._$etcherCoreInstance.scripts.push(func);
                 }
             }
 
-            component_body = component_body.replaceAll(
-                /\{\{(.*)\}\}/g,
-                (match: any, _p1: string) => {
-                    const p1 = parseBetweenPairs(0, ['{{', '}}'], match)
-                        .replace(/^\{\{/, '')
-                        .replace(/\}\}$/, '');
+            component_body = component_body.replaceAll(/\{\{(.*)\}\}/g, (match: any, _p1: string) => {
+                const p1 = parseBetweenPairs(0, ['{{', '}}'], match).replace(/^\{\{/, '').replace(/\}\}$/, '');
 
-                    const expression = p1.split('.')[0].trim();
+                const expression = p1.split('.')[0].trim();
 
-                    if (this.hasAttribute('#' + expression)) {
-                        let value = this.getAttribute('#' + expression);
+                if (this.hasAttribute('#' + expression)) {
+                    let value = this.getAttribute('#' + expression);
 
-                        value = replaceEntities(value);
+                    value = replaceEntities(value);
 
-                        if (value.startsWith('{') || value.startsWith('[')) {
+                    if (value.startsWith('{') || value.startsWith('[')) {
+                        try {
+                            value = JSON.parse(value);
+                        } catch (e) {
                             try {
-                                value = JSON.parse(value);
+                                value = parseJSON(value);
                             } catch (e) {
-                                try {
-                                    value = parseJSON(value);
-                                } catch (e) {
-                                    error('Could not parse JSON:', e);
-                                }
+                                error('Could not parse JSON:', e);
                             }
                         }
-
-                        if (p1.split('.').length > 1) {
-                            return wrappedEval(p1, value, p1.split('.')[0]);
-                        }
-
-                        value = wrappedEval(value);
-
-                        return value;
                     }
 
-                    if (expression === '$') {
-                        let ret;
-
-                        if (
-                            p1.includes('.get') ||
-                            p1.includes('.set') ||
-                            p1.includes('._value')
-                        ) {
-                            stop();
-                            this.#renderError(
-                                new Error(
-                                    'Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n' +
-                                        `${match}\n` +
-                                        `${' '.repeat(
-                                            match.indexOf(p1)
-                                        )}${'^'.repeat(p1.length)}`
-                                )
-                            );
-                            return error(
-                                'Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n',
-                                `${match}\n`,
-                                `${' '.repeat(match.indexOf(p1))}${'^'.repeat(
-                                    p1.length
-                                )}`
-                            );
-                        }
-
-                        ret = String(wrappedEval(p1, this._lexicalScope, '$'));
-
-                        this._lexicalScope[
-                            p1.split('.')[1].replace(/\?$/, '')
-                        ] = {
-                            accessors: [
-                                [
-                                    this,
-                                    (last, value) => {
-                                        const element = closest(
-                                            this.shadowRoot.innerHTML,
-                                            this.shadowRoot.innerHTML.indexOf(
-                                                `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`
-                                            )
-                                        );
-
-                                        const original =
-                                            this.shadowRoot.querySelector(
-                                                selector(element)
-                                            );
-
-                                        if (!original) return;
-
-                                        replace(
-                                            original,
-                                            `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`,
-                                            `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`
-                                        );
-                                    },
-                                ],
-                            ],
-                            _value: null,
-                            get: null,
-                            set: null,
-                            subscribe: null,
-                        };
-
-                        return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
+                    if (p1.split('.').length > 1) {
+                        return wrappedEval(p1, value, p1.split('.')[0]);
                     }
 
-                    if (this.hasAttribute(expression)) {
-                        let value = this.getAttribute(expression);
+                    value = wrappedEval(value);
 
-                        return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
-                    }
-
-                    return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                    return value;
                 }
-            );
 
-            const atRules = parseExpression(
-                component_body,
-                /{@([a-zA-Z]*?) (.*)}/g
-            );
+                if (expression === '$') {
+                    let ret;
+
+                    if (p1.includes('.get') || p1.includes('.set') || p1.includes('._value')) {
+                        stop();
+                        this.#renderError(
+                            new Error(
+                                'Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n' +
+                                    `${match}\n` +
+                                    `${' '.repeat(match.indexOf(p1))}${'^'.repeat(p1.length)}`
+                            )
+                        );
+                        return error(
+                            'Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n',
+                            `${match}\n`,
+                            `${' '.repeat(match.indexOf(p1))}${'^'.repeat(p1.length)}`
+                        );
+                    }
+
+                    ret = String(wrappedEval(p1, this._lexicalScope, '$'));
+
+                    this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')] = {
+                        accessors: [
+                            [
+                                this,
+                                (last, value) => {
+                                    const element = closest(
+                                        this.shadowRoot.innerHTML,
+                                        this.shadowRoot.innerHTML.indexOf(
+                                            `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`
+                                        )
+                                    );
+
+                                    const original = this.shadowRoot.querySelector(selector(element));
+
+                                    if (!original) return;
+
+                                    replace(
+                                        original,
+                                        `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`,
+                                        `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`
+                                    );
+                                },
+                            ],
+                        ],
+                        _value: null,
+                        get: null,
+                        set: null,
+                        subscribe: null,
+                    };
+
+                    return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
+                }
+
+                if (this.hasAttribute(expression)) {
+                    let value = this.getAttribute(expression);
+
+                    return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
+                }
+
+                return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+            });
+
+            const atRules = parseExpression(component_body, /{@([a-zA-Z]*?) (.*)}/g);
 
             loopMatches(atRules, (rule) => {
                 const [_match, type, expression] = rule;
@@ -239,54 +200,34 @@ export const EtcherElement = class extends HTMLElement {
                         const expressionResult = wrappedEval(expression);
 
                         if (!expressionResult) {
-                            const elseBlock = component_body.match(
-                                /{@if .*}.*{:else}(.*){\/if}/s
-                            );
+                            const elseBlock = component_body.match(/{@if .*}.*{:else}(.*){\/if}/s);
 
                             if (elseBlock) {
-                                component_body = component_body.replace(
-                                    elseBlock[0],
-                                    elseBlock[1]
-                                );
+                                component_body = component_body.replace(elseBlock[0], elseBlock[1]);
                             } else {
-                                component_body = component_body.replace(
-                                    /{@if (.*)}(.*){\/if}/s,
-                                    ''
-                                );
+                                component_body = component_body.replace(/{@if (.*)}(.*){\/if}/s, '');
 
                                 return;
                             }
                         }
 
-                        component_body = component_body.replace(
-                            /{@if (.*)}(.*){:else}(.*){\/if}/s,
-                            '$2'
-                        );
+                        component_body = component_body.replace(/{@if (.*)}(.*){:else}(.*){\/if}/s, '$2');
                         break;
                     }
                     case 'for': {
-                        const [_, value, iterable] =
-                            expression.match(/(.*) in (.*)/);
+                        const [_, value, iterable] = expression.match(/(.*) in (.*)/);
 
                         const iterableResult = wrappedEval(iterable);
 
-                        let content = component_body.match(
-                            /{@for (.*?)}(.*){\/for}/s
-                        )[2];
+                        let content = component_body.match(/{@for (.*?)}(.*){\/for}/s)[2];
 
                         let newContent = '';
 
                         for (const item of iterableResult) {
-                            newContent += content.replaceAll(
-                                `{{${value}}}`,
-                                item
-                            );
+                            newContent += content.replaceAll(`{{${value}}}`, item);
                         }
 
-                        component_body = component_body.replace(
-                            /{@for (.*?)}(.*){\/for}/s,
-                            newContent
-                        );
+                        component_body = component_body.replace(/{@for (.*?)}(.*){\/for}/s, newContent);
 
                         break;
                     }
@@ -297,10 +238,7 @@ export const EtcherElement = class extends HTMLElement {
 
                         this._lexicalScope[varName] = {
                             _value: wrappedEval(value.trim()),
-                            accessors: [
-                                ...(this._lexicalScope[varName]?.accessors ||
-                                    []),
-                            ],
+                            accessors: [...(this._lexicalScope[varName]?.accessors || [])],
                             get() {
                                 return this._value;
                             },
@@ -312,49 +250,33 @@ export const EtcherElement = class extends HTMLElement {
                                     accessor[1](prev, value);
                                 }
                             },
-                            subscribe(
-                                callback: (prev: any, next: any) => void
-                            ) {
+                            subscribe(callback: (prev: any, next: any) => void) {
                                 this.accessors.push([this, callback]);
                             },
                         };
 
-                        component_body = component_body.replace(
-                            /{@state (.*?)}/s,
-                            ''
-                        );
+                        component_body = component_body.replace(/{@state (.*?)}/s, '');
                         break;
                     }
                     case 'loop': {
                         const num = parseInt(expression);
 
-                        let loopContent = component_body.match(
-                            /{@loop (.*?)}(.*){\/loop}/s
-                        )[2];
+                        let loopContent = component_body.match(/{@loop (.*?)}(.*){\/loop}/s)[2];
 
                         let newLoopContent = '';
 
                         for (let i = 0; i < num; i++) {
-                            newLoopContent += loopContent.replaceAll(
-                                '{{index}}',
-                                i.toString()
-                            );
+                            newLoopContent += loopContent.replaceAll('{{index}}', i.toString());
                         }
 
-                        component_body = component_body.replace(
-                            /{@loop (.*)}(.*){\/loop}/s,
-                            newLoopContent
-                        );
+                        component_body = component_body.replace(/{@loop (.*)}(.*){\/loop}/s, newLoopContent);
 
                         break;
                     }
                 }
             });
 
-            const eventAttrs = parseExpression(
-                component_body,
-                /<([a-zA-Z0-9-]+)([^<]*)@([a-zA-Z]*)=/gs
-            );
+            const eventAttrs = parseExpression(component_body, /<([a-zA-Z0-9-]+)([^<]*)@([a-zA-Z]*)=/gs);
 
             loopMatches(eventAttrs, (attr) => {
                 const [_match, tagName, attrsBefore, event] = attr;
@@ -366,17 +288,12 @@ export const EtcherElement = class extends HTMLElement {
                 );
 
                 const innerHTML = parseBetweenPairs(
-                    component_body.indexOf(_match) +
-                        _match.length +
-                        expression.length,
+                    component_body.indexOf(_match) + _match.length + expression.length,
                     ['>', '<'],
                     component_body
                 );
 
-                component_body = component_body.replace(
-                    `${_match}${expression}`,
-                    `<${tagName}${attrsBefore}`
-                );
+                component_body = component_body.replace(`${_match}${expression}`, `<${tagName}${attrsBefore}`);
 
                 this._listeners[event] = [
                     ...(this._listeners[event] || []),
@@ -402,11 +319,7 @@ export const EtcherElement = class extends HTMLElement {
 
             state = 'mounted';
 
-            for (
-                let i = 0;
-                i < Object.entries(this._lexicalScope).length;
-                i++
-            ) {
+            for (let i = 0; i < Object.entries(this._lexicalScope).length; i++) {
                 const [_, s] = Object.entries(this._lexicalScope)[i];
 
                 for (let j = 0; j < s.accessors.length; j++) {
@@ -447,13 +360,8 @@ export const EtcherElement = class extends HTMLElement {
                         const listener = value[i];
 
                         const valid =
-                            (
-                                event.target as HTMLElement
-                            )?.tagName?.toLowerCase?.() ===
-                                listener.tag?.toLowerCase?.() &&
-                            (event.target as HTMLElement)?.innerHTML.startsWith(
-                                listener.content
-                            );
+                            (event.target as HTMLElement)?.tagName?.toLowerCase?.() === listener.tag?.toLowerCase?.() &&
+                            (event.target as HTMLElement)?.innerHTML.startsWith(listener.content);
 
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {

@@ -1,11 +1,4 @@
-import {
-    processChunk,
-    parseFile,
-    done,
-    resetChunks,
-    clientJS,
-    CHUNK_REGISTRY,
-} from './index.js';
+import { processChunk, parseFile, done, resetChunks, clientJS, CHUNK_REGISTRY } from './index.js';
 import { whitespace, log, error, divider } from '../util/logger.js';
 import { isEtcherFile } from '../util/files.js';
 import { runHooks } from '../config/plugins.js';
@@ -28,43 +21,30 @@ export const generateCoreFile = async (shouldLog: boolean = true) => {
             throw new Error('Source directory does not exist!');
         }
 
-        const componentFiles = await fs.promises.readdir(
-            path.join(config.input, 'components')
-        );
+        const componentFiles = await fs.promises.readdir(path.join(config.input, 'components'));
 
         for (const file of componentFiles) {
             if (isEtcherFile(file)) {
                 log(chalk.cyanBright(`Transforming ${file}...`));
 
                 const componentName = file.replace('.xtml', '');
-                const componentData = await fs.promises.readFile(
-                    path.join(config.input, 'components', file),
-                    'utf8'
-                );
+                const componentData = await fs.promises.readFile(path.join(config.input, 'components', file), 'utf8');
 
                 const PluginHookResult = await runHooks({
                     hook: HOOK_TYPES.PROCESS_COMPONENT,
-                    args: [
-                        componentData,
-                        path.join(config.input, 'components', file),
-                    ],
+                    args: [componentData, path.join(config.input, 'components', file)],
                 });
 
                 processChunk(componentName, PluginHookResult || componentData);
 
                 runHooks({
                     hook: HOOK_TYPES.GENERATED_COMPONENT,
-                    args: [
-                        PluginHookResult || componentData,
-                        path.join(config.input, 'components', file),
-                    ],
+                    args: [PluginHookResult || componentData, path.join(config.input, 'components', file)],
                 });
 
                 log(chalk.greenBright(`Transformed ${file}!`));
             } else {
-                log(
-                    chalk.yellow(`Skipping ${file} as it is not an XTML file.`)
-                );
+                log(chalk.yellow(`Skipping ${file} as it is not an XTML file.`));
             }
         }
 
@@ -155,8 +135,7 @@ export const migratePages = async () => {
                 });
             }
 
-            const computedAttributeRegex =
-                /#[a-zA-Z0-9\-:]+\s*=\s*\{(?:\s*.*?\s*)\}\s*}?/gs;
+            const computedAttributeRegex = /#[a-zA-Z0-9\-:]+\s*=\s*\{(?:\s*.*?\s*)\}\s*}?/gs;
 
             const computedAttributes = fileData.match(computedAttributeRegex);
 
@@ -166,12 +145,7 @@ export const migratePages = async () => {
 
                     const attrName = attr.split('=')[0];
 
-                    let attrValue = attr
-                        .trim()
-                        .split('=')[1]
-                        .replace(/^\{/, '')
-                        .replace(/\}$/, '')
-                        .trim();
+                    let attrValue = attr.trim().split('=')[1].replace(/^\{/, '').replace(/\}$/, '').trim();
 
                     attrValue = attrValue.replaceAll('"', '&quot;');
                     attrValue = attrValue.replaceAll("'", '&apos;');
@@ -180,18 +154,13 @@ export const migratePages = async () => {
                     attrValue = attrValue.replaceAll('&', '&amp;');
                     attrValue = attrValue.replaceAll('`', '&grave;');
 
-                    fileData = fileData.replace(
-                        attr,
-                        `${attrName}="${attrValue}" `
-                    );
+                    fileData = fileData.replace(attr, `${attrName}="${attrValue}" `);
                 }
             }
 
             const outputPath = path.join(
                 config.output,
-                file.path
-                    .replace(path.join(config.input, 'pages'), '')
-                    .replace('.xtml', '.html')
+                file.path.replace(path.join(config.input, 'pages'), '').replace('.xtml', '.html')
             );
 
             if (!fs.existsSync(path.dirname(outputPath))) {
@@ -248,11 +217,7 @@ export const watch = async () => {
 
         divider();
 
-        log(
-            chalk.magenta(
-                'Detected change in client.js, regenerating chunks...'
-            )
-        );
+        log(chalk.magenta('Detected change in client.js, regenerating chunks...'));
 
         await migratePages();
 
@@ -275,9 +240,7 @@ export const watch = async () => {
 
         whitespace();
         divider();
-        log(
-            chalk.white('Detected change in components, regenerating chunks...')
-        );
+        log(chalk.white('Detected change in components, regenerating chunks...'));
 
         resetChunks();
 

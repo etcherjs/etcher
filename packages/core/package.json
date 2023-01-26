@@ -16,6 +16,7 @@
     },
     "scripts": {
         "dev": "rollup -c -w",
+        "build": "rollup -c",
         "etcher": "node . -w"
     },
     "type": "module",

@@ -13,26 +13,14 @@ export const replaceEntities = (str: string) => {
     return str;
 };
 
-export const wrappedEval = (
-    expression: string,
-    arg?: any,
-    namedArg?: string,
-    prepend?: string
-) => {
+export const wrappedEval = (expression: string, arg?: any, namedArg?: string, prepend?: string) => {
     if (arg && !namedArg) {
-        return Function(
-            `"use strict"\n${prepend || ''}\n;return (${expression})`
-        )(arg);
+        return Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
     }
     if (arg && namedArg) {
-        return new Function(
-            namedArg,
-            `"use strict"\n${prepend || ''}\n;return (${expression})`
-        )(arg);
+        return new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
     }
-    return Function(
-        `"use strict";\n${prepend || ''}\nreturn (${expression})`
-    )();
+    return Function(`"use strict";\n${prepend || ''}\nreturn (${expression})`)();
 };
 
 export const startsWith = (str: string, regex: RegExp, offset = 0) => {
@@ -49,10 +37,7 @@ export const parseJSON = (obj: string) => {
     return JSON.parse(obj);
 };
 
-export const loopMatches = (
-    iterator: any[],
-    callback: (match: any, index: number) => void
-) => {
+export const loopMatches = (iterator: any[], callback: (match: any, index: number) => void) => {
     for (let i = 0; i < iterator.length; i++) {
         callback(iterator[i], i);
     }

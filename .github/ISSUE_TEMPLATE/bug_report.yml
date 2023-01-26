@@ -1,6 +1,6 @@
-name: "Bug report"
+name: 'Bug report'
 description: Create a bug report to help us imporove Etcher.
-labels: ["bug", "needs confirmation"]
+labels: ['bug', 'needs confirmation']
 body:
     - type: dropdown
       id: packages
@@ -8,9 +8,9 @@ body:
           label: Impacted Packages
           description: What packages are effected by this issue?
           options:
-              - "@etcher/core"
-              - "etcher-vscode"
-              - "create-etcher"
+              - '@etcher/core'
+              - 'etcher-vscode'
+              - 'create-etcher'
       validations:
           required: true
     - type: textarea

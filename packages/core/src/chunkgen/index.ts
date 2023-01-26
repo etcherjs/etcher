@@ -8,10 +8,7 @@ import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs';
 
-export const clientJS = fs.readFileSync(
-    path.join(dirname(import.meta), './client.js'),
-    { encoding: 'utf8' }
-);
+export const clientJS = fs.readFileSync(path.join(dirname(import.meta), './client.js'), { encoding: 'utf8' });
 
 export let chunks = [];
 
@@ -64,10 +61,7 @@ export const parseFile = (file: string) => {
         let fileData = file;
 
         for (const chunk of CHUNK_REGISTRY) {
-            fileData = fileData.replaceAll(
-                `etcher-${chunk.name}`,
-                chunk.chunkName
-            );
+            fileData = fileData.replaceAll(`etcher-${chunk.name}`, chunk.chunkName);
         }
 
         return fileData;

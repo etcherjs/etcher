@@ -94,10 +94,7 @@ const replace = (element, find, replace) => {
     const index = html.indexOf(find);
     if (index < 0)
         return;
-    element.innerHTML =
-        html.substring(0, index) +
-            replace +
-            html.substring(index + find.length);
+    element.innerHTML = html.substring(0, index) + replace + html.substring(index + find.length);
     return element;
 };
 const closest = (body, stringIndex) => {
@@ -134,12 +131,9 @@ const selector = (element) => {
                 .join('.')}`
             : ``;
         const selector = `${tag}${id}${classes}`;
-        if (element.parentElement &&
-            element.parentElement?.children?.length !== 1) {
+        if (element.parentElement && element.parentElement?.children?.length !== 1) {
             const index = Array.from(element.parentElement.children).indexOf(element);
-            path = path
-                ? `${selector}:nth-child(${index + 1}) > ${path}`
-                : `${selector}:nth-child(${index + 1})`;
+            path = path ? `${selector}:nth-child(${index + 1}) > ${path}` : `${selector}:nth-child(${index + 1})`;
         }
         else {
             path = path ? `${selector} > ${path}` : selector;
@@ -186,8 +180,7 @@ const EtcherElement = class extends HTMLElement {
                         if (this.hasAttribute('#' + p1.trim())) {
                             let value = this.getAttribute('#' + p1.trim());
                             value = replaceEntities(value);
-                            if (value.startsWith('{') ||
-                                value.startsWith('[')) {
+                            if (value.startsWith('{') || value.startsWith('[')) {
                                 try {
                                     value = JSON.parse(value);
                                 }
@@ -214,9 +207,7 @@ const EtcherElement = class extends HTMLElement {
                 }
             }
             component_body = component_body.replaceAll(/\{\{(.*)\}\}/g, (match, _p1) => {
-                const p1 = parseBetweenPairs(0, ['{{', '}}'], match)
-                    .replace(/^\{\{/, '')
-                    .replace(/\}\}$/, '');
+                const p1 = parseBetweenPairs(0, ['{{', '}}'], match).replace(/^\{\{/, '').replace(/\}\}$/, '');
                 const expression = p1.split('.')[0].trim();
                 if (this.hasAttribute('#' + expression)) {
                     let value = this.getAttribute('#' + expression);
@@ -242,9 +233,7 @@ const EtcherElement = class extends HTMLElement {
                 }
                 if (expression === '$') {
                     let ret;
-                    if (p1.includes('.get') ||
-                        p1.includes('.set') ||
-                        p1.includes('._value')) {
+                    if (p1.includes('.get') || p1.includes('.set') || p1.includes('._value')) {
                         stop();
                         this.#renderError(new Error('Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n' +
                             `${match}\n` +
@@ -313,10 +302,7 @@ const EtcherElement = class extends HTMLElement {
                         const varName = formatVariableName(name.trim());
                         this._lexicalScope[varName] = {
                             _value: wrappedEval(value.trim()),
-                            accessors: [
-                                ...(this._lexicalScope[varName]?.accessors ||
-                                    []),
-                            ],
+                            accessors: [...(this._lexicalScope[varName]?.accessors || [])],
                             get() {
                                 return this._value;
                             },
@@ -350,9 +336,7 @@ const EtcherElement = class extends HTMLElement {
             loopMatches(eventAttrs, (attr) => {
                 const [_match, tagName, attrsBefore, event] = attr;
                 const expression = parseBetweenPairs(component_body.indexOf(_match) + _match.length, ['{', '}'], component_body);
-                const innerHTML = parseBetweenPairs(component_body.indexOf(_match) +
-                    _match.length +
-                    expression.length, ['>', '<'], component_body);
+                const innerHTML = parseBetweenPairs(component_body.indexOf(_match) + _match.length + expression.length, ['>', '<'], component_body);
                 component_body = component_body.replace(`${_match}${expression}`, `<${tagName}${attrsBefore}`);
                 this._listeners[event] = [
                     ...(this._listeners[event] || []),
@@ -400,8 +384,7 @@ const EtcherElement = class extends HTMLElement {
                 this.shadowRoot.addEventListener(key, (event) => {
                     for (let i = 0; i < value.length; i++) {
                         const listener = value[i];
-                        const valid = event.target?.tagName?.toLowerCase?.() ===
-                            listener.tag?.toLowerCase?.() &&
+                        const valid = event.target?.tagName?.toLowerCase?.() === listener.tag?.toLowerCase?.() &&
                             event.target?.innerHTML.startsWith(listener.content);
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {

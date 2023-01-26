@@ -15,9 +15,7 @@ const _importConfig: () => Promise<Options> = () => {
     return new Promise(async (resolve, reject) => {
         let configModule: { default: Partial<Options> };
         try {
-            configModule = await import(
-                path.join(process.cwd(), 'etcher.config.js')
-            );
+            configModule = await import(path.join(process.cwd(), 'etcher.config.js'));
         } catch (e) {
             resolve(templateConfig);
             return;

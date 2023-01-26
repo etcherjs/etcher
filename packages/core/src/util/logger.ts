@@ -5,9 +5,7 @@ export const whitespace = () => {
 };
 
 export const divider = () => {
-    return console.log(
-        '----------------------------------------------------------'
-    );
+    return console.log('----------------------------------------------------------');
 };
 
 export const wordmark = () => {

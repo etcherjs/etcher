@@ -146,6 +146,9 @@ const selector = (element) => {
 const error = (...message) => {
     console.error('%cetcher:%c', 'color: hsl(350, 89%, 72%); font-weight: 600', '', ...message);
 };
+const warn = (...message) => {
+    console.warn('%cetcher:%c', 'color: hsl(40, 89%, 72%); font-weight: 600', '', ...message);
+};
 
 const EtcherElement = class extends HTMLElement {
     _listeners = {};
@@ -265,7 +268,14 @@ const EtcherElement = class extends HTMLElement {
                     let value = this.getAttribute(expression);
                     return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
                 }
-                return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                try {
+                    const value = wrappedEval(p1);
+                    return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
+                }
+                catch (e) {
+                    warn(`Could not execute interpolated expression: ${p1}`);
+                    return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                }
             });
             const atRules = parseExpression(component_body, /{@([a-zA-Z]*?) (.*)}/g);
             loopMatches(atRules, (rule) => {

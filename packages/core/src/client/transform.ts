@@ -187,7 +187,14 @@ export const EtcherElement = class extends HTMLElement {
                     return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
                 }
 
-                return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                try {
+                    const value = wrappedEval(p1);
+
+                    return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
+                } catch (e) {
+                    warn(`Could not execute interpolated expression: ${p1}`);
+                    return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                }
             });
 
             const atRules = parseExpression(component_body, /{@([a-zA-Z]*?) (.*)}/g);

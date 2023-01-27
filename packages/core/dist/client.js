@@ -335,13 +335,11 @@ const EtcherElement = class extends HTMLElement {
                     }
                     case 'loop': {
                         const num = Number(expression);
-                        console.log(num);
                         let loopContent = component_body.match(/{@loop (.*?)}(.*){\/loop}/s)[2];
                         let newLoopContent = '';
                         for (let i = 0; i < num; i++) {
                             newLoopContent += loopContent.replace(new RegExp(`\{\{(.*?)\}\}`, 'g'), (_, p1) => {
                                 const v = `((index) => (${p1}))(${i})`;
-                                console.log(v);
                                 return wrappedEval(v);
                             });
                         }

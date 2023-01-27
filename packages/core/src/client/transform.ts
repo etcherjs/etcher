@@ -376,7 +376,9 @@ export const EtcherElement = class extends HTMLElement {
 
                         const valid =
                             (event.target as HTMLElement)?.tagName?.toLowerCase?.() === listener.tag?.toLowerCase?.() &&
-                            (event.target as HTMLElement)?.innerHTML.startsWith(listener.content);
+                            (event.target as HTMLElement)?.innerHTML
+                                ? (event.target as HTMLElement)?.innerHTML.startsWith(listener.content)
+                                : true;
 
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {

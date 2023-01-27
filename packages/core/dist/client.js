@@ -11,11 +11,16 @@ const replaceEntities = (str) => {
     return str;
 };
 const wrappedEval = (expression, arg, namedArg, prepend) => {
-    if (arg && !namedArg) {
-        return Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
-    }
-    if (arg && namedArg) {
-        return new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
+    if (arg) {
+        if (namedArg) {
+            return typeof new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg) ===
+                'function'
+                ? new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg)(arg)
+                : new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
+        }
+        return typeof Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg) === 'function'
+            ? Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg)(arg)
+            : Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
     }
     return Function(`"use strict";\n${prepend || ''}\nreturn (${expression})`)();
 };
@@ -401,7 +406,9 @@ const EtcherElement = class extends HTMLElement {
                     for (let i = 0; i < value.length; i++) {
                         const listener = value[i];
                         const valid = event.target?.tagName?.toLowerCase?.() === listener.tag?.toLowerCase?.() &&
-                            event.target?.innerHTML.startsWith(listener.content);
+                            event.target?.innerHTML
+                            ? event.target?.innerHTML.startsWith(listener.content)
+                            : true;
                         if (valid) {
                             if (startsWith(listener.value, /\(.*\)\s*=>/)) {
                                 wrappedEval('(' + listener.value + ')()', event, null, `const $ = {...window._$etcherCore.c['${component_id}']._lexicalScope};`);

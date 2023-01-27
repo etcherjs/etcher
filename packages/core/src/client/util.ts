@@ -14,11 +14,17 @@ export const replaceEntities = (str: string) => {
 };
 
 export const wrappedEval = (expression: string, arg?: any, namedArg?: string, prepend?: string) => {
-    if (arg && !namedArg) {
-        return Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
-    }
-    if (arg && namedArg) {
-        return new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
+    if (arg) {
+        if (namedArg) {
+            return typeof new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg) ===
+                'function'
+                ? new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg)(arg)
+                : new Function(namedArg, `"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
+        }
+
+        return typeof Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg) === 'function'
+            ? Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg)(arg)
+            : Function(`"use strict"\n${prepend || ''}\n;return (${expression})`)(arg);
     }
     return Function(`"use strict";\n${prepend || ''}\nreturn (${expression})`)();
 };

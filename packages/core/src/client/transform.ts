@@ -231,7 +231,11 @@ export const EtcherElement = class extends HTMLElement {
                         let newContent = '';
 
                         for (const item of iterableResult) {
-                            newContent += content.replaceAll(`{{${value}}}`, item);
+                            newContent += content.replace(new RegExp(`\{\{(.*?)\}\}`, 'g'), (_, p1) => {
+                                const v = `((${value}) => (${p1}))(${JSON.stringify(item)})`;
+
+                                return wrappedEval(v);
+                            });
                         }
 
                         component_body = component_body.replace(/{@for (.*?)}(.*){\/for}/s, newContent);
@@ -266,14 +270,22 @@ export const EtcherElement = class extends HTMLElement {
                         break;
                     }
                     case 'loop': {
-                        const num = parseInt(expression);
+                        const num = Number(expression);
+
+                        console.log(num);
 
                         let loopContent = component_body.match(/{@loop (.*?)}(.*){\/loop}/s)[2];
 
                         let newLoopContent = '';
 
                         for (let i = 0; i < num; i++) {
-                            newLoopContent += loopContent.replaceAll('{{index}}', i.toString());
+                            newLoopContent += loopContent.replace(new RegExp(`\{\{(.*?)\}\}`, 'g'), (_, p1) => {
+                                const v = `((index) => (${p1}))(${i})`;
+
+                                console.log(v);
+
+                                return wrappedEval(v);
+                            });
                         }
 
                         component_body = component_body.replace(/{@loop (.*)}(.*){\/loop}/s, newLoopContent);

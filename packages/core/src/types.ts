@@ -48,5 +48,4 @@ export type Options = {
     input?: string;
     output?: string;
     plugins?: ExternalPluginOptions[];
-    batteryMode?: boolean;
 };

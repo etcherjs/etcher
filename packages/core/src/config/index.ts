@@ -1,12 +1,12 @@
 import type { Options } from '../types';
 
+import { warn } from '../util/logger';
 import path from 'path';
 
 const templateConfig = {
     input: 'src',
     output: 'public',
     plugins: [],
-    batteryMode: false,
 };
 
 let config: Options;
@@ -17,6 +17,7 @@ const _importConfig: () => Promise<Options> = () => {
         try {
             configModule = await import(path.join(process.cwd(), 'etcher.config.js'));
         } catch (e) {
+            warn("Error while importing 'etcher.config.js'. Using default config.");
             resolve(templateConfig);
             return;
         }

@@ -24,11 +24,6 @@ const wrappedEval = (expression, arg, namedArg, prepend) => {
     }
     return Function(`"use strict";\n${prepend || ''}\nreturn (${expression})`)();
 };
-const startsWith = (str, regex, offset = 0) => {
-    const rgx = new RegExp(`^.{${offset}}(${regex.source})`);
-    const result = str.match(rgx);
-    return !!result;
-};
 const parseJSON = (obj) => {
     obj = obj.replace(/,(?=\s*})/, '');
     obj = obj.replace(/'/g, '"');
@@ -279,7 +274,7 @@ const EtcherElement = class extends HTMLElement {
                 }
                 catch (e) {
                     warn(`Could not execute interpolated expression: ${p1}`);
-                    return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                    return `{{${p1}}}`;
                 }
             });
             const atRules = parseExpression(component_body, /{@([a-zA-Z]*?) (.*)}/g);
@@ -410,9 +405,6 @@ const EtcherElement = class extends HTMLElement {
                             ? event.target?.innerHTML.startsWith(listener.content)
                             : true;
                         if (valid) {
-                            if (startsWith(listener.value, /\(.*\)\s*=>/)) {
-                                wrappedEval('(' + listener.value + ')()', event, null, `const $ = {...window._$etcherCore.c['${component_id}']._lexicalScope};`);
-                            }
                             wrappedEval(listener.value, event, null, `const $ = {...window._$etcherCore.c['${component_id}']._lexicalScope};`);
                         }
                     }
@@ -432,17 +424,22 @@ const EtcherElement = class extends HTMLElement {
             .split('\n')
             .map((line) => `<div>${line}</div>`)
             .join('');
-        const shadow = this.attachShadow({
-            mode: 'open',
-        });
-        shadow.append(...html(`<div style="color: #ff4c4c; font-family: monospace; font-size: 14px; padding: 10px; background: #aaaaaa1c; border: 2px solid #e5e5e570; border-radius: 5px; margin: 10px 0; max-width: 900px;">
+        const markup = `<div style="color: #ff4c4c; font-family: monospace; font-size: 14px; padding: 10px; background: #aaaaaa1c; border: 2px solid #e5e5e570; border-radius: 5px; margin: 10px 0; max-width: 900px;">
         <span style="white-space: break-spaces;">Error while rendering component: ${message}</span>
         <br />
         <br />
         <div style="font-size: 12px; color: #8a8989; font-family: monospace;">
             ${stack}
         </div>
-        </div>`));
+        </div>`;
+        if (this.shadowRoot) {
+            this.shadowRoot.innerHTML = markup;
+            return;
+        }
+        const shadow = this.attachShadow({
+            mode: 'open',
+        });
+        shadow.append(...html(markup));
     }
 };
 const createElement = (component, name) => {

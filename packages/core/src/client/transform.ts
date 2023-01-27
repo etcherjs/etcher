@@ -1,4 +1,4 @@
-import { parseJSON, formatVariableName, wrappedEval, startsWith, loopMatches, replaceEntities } from './util';
+import { parseJSON, formatVariableName, wrappedEval, loopMatches, replaceEntities } from './util';
 import { parseExpression, parseBetweenPairs } from './parse';
 import { html, replace, closest, selector } from './dom';
 import { error, warn } from './log';
@@ -193,7 +193,7 @@ export const EtcherElement = class extends HTMLElement {
                     return `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`;
                 } catch (e) {
                     warn(`Could not execute interpolated expression: ${p1}`);
-                    return `<!-- etcher:is ${p1} -->{{${p1}}}<!-- etcher:ie -->`;
+                    return `{{${p1}}}`;
                 }
             });
 
@@ -381,15 +381,6 @@ export const EtcherElement = class extends HTMLElement {
                                 : true;
 
                         if (valid) {
-                            if (startsWith(listener.value, /\(.*\)\s*=>/)) {
-                                wrappedEval(
-                                    '(' + listener.value + ')()',
-                                    event,
-                                    null,
-                                    `const $ = {...window._$etcherCore.c['${component_id}']._lexicalScope};`
-                                );
-                            }
-
                             wrappedEval(
                                 listener.value,
                                 event,
@@ -415,20 +406,26 @@ export const EtcherElement = class extends HTMLElement {
             .map((line) => `<div>${line}</div>`)
             .join('');
 
-        const shadow = this.attachShadow({
-            mode: 'open',
-        });
-
-        shadow.append(
-            ...html(`<div style="color: #ff4c4c; font-family: monospace; font-size: 14px; padding: 10px; background: #aaaaaa1c; border: 2px solid #e5e5e570; border-radius: 5px; margin: 10px 0; max-width: 900px;">
+        const markup = `<div style="color: #ff4c4c; font-family: monospace; font-size: 14px; padding: 10px; background: #aaaaaa1c; border: 2px solid #e5e5e570; border-radius: 5px; margin: 10px 0; max-width: 900px;">
         <span style="white-space: break-spaces;">Error while rendering component: ${message}</span>
         <br />
         <br />
         <div style="font-size: 12px; color: #8a8989; font-family: monospace;">
             ${stack}
         </div>
-        </div>`)
-        );
+        </div>`;
+
+        if (this.shadowRoot) {
+            this.shadowRoot.innerHTML = markup;
+
+            return;
+        }
+
+        const shadow = this.attachShadow({
+            mode: 'open',
+        });
+
+        shadow.append(...html(markup));
     }
 };
 

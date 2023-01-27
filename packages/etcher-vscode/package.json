@@ -2,7 +2,7 @@
     "name": "etcher-vscode",
     "displayName": "etcher-vscode",
     "description": "Adds Etcher support to your IDE",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "MIT",
     "engines": {
         "vscode": "^1.72.0"

@@ -64,7 +64,7 @@ function activate(context) {
                 const config = findConfig(editor.document.fileName);
                 let configObj = null;
                 if (config) {
-                    const data = fs_1.default.readFileSync(config.path, 'utf8');
+                    const data = fs_1.default.readFileSync(config.path, 'utf8').replace(/plugins:\s*\[.*?],/s, '');
                     const exported = data.match(/export\s+default\s+(?:defineConfig\()?({[\s\S]*})\)?/);
                     configObj = exported
                         ? JSON.parse(exported[1]

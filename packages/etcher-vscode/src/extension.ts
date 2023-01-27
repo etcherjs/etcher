@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
                     } = null;
 
                     if (config) {
-                        const data = fs.readFileSync(config.path, 'utf8');
+                        const data = fs.readFileSync(config.path, 'utf8').replace(/plugins:\s*\[.*?],/s, '');
 
                         const exported = data.match(/export\s+default\s+(?:defineConfig\()?({[\s\S]*})\)?/);
 

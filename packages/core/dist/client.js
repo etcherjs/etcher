@@ -108,16 +108,26 @@ const closest = (body, stringIndex) => {
         rightIndex = body.indexOf('>', leftIndex);
     }
     const tag = body.substring(leftIndex + 1, rightIndex).split(' ')[0];
-    for (let i = 0; i < htmlCollection.length; i++) {
-        const element = htmlCollection[i];
-        if (element.tagName.toLowerCase() !== tag.replace('/', ''))
-            continue;
-        if (!body.slice(0, leftIndex).endsWith(element.innerHTML) &&
-            !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML))
-            continue;
-        return element;
-    }
-    return null;
+    const validate = (collection) => {
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
+            if (element.tagName.toLowerCase() !== tag.replace('/', ''))
+                continue;
+            if (!body.slice(0, leftIndex).endsWith(element.innerHTML) &&
+                !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML))
+                continue;
+            return element;
+        }
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
+            if (element.children.length > 0) {
+                const result = validate(element.children);
+                if (result)
+                    return result;
+            }
+        }
+    };
+    return validate(htmlCollection);
 };
 const selector = (element) => {
     let path = ``;
@@ -243,17 +253,25 @@ const EtcherElement = class extends HTMLElement {
                             `${' '.repeat(match.indexOf(p1))}${'^'.repeat(p1.length)}`));
                         return error('Do not attempt to directly access the value of a scoped item from an interpolated expression.\n\n', `${match}\n`, `${' '.repeat(match.indexOf(p1))}${'^'.repeat(p1.length)}`);
                     }
-                    ret = String(wrappedEval(p1, this._lexicalScope, '$'));
+                    ret = String(wrappedEval(p1, {
+                        [p1.split('.')[1].replace(/\?$/, '')]: undefined,
+                    }, '$'));
+                    if (this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')])
+                        return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
                     this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')] = {
                         accessors: [
                             [
                                 this,
                                 (last, value) => {
-                                    const element = closest(this.shadowRoot.innerHTML, this.shadowRoot.innerHTML.indexOf(`<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`));
-                                    const original = this.shadowRoot.querySelector(selector(element));
-                                    if (!original)
-                                        return;
-                                    replace(original, `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`, `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);
+                                    let index = this.shadowRoot.innerHTML.indexOf(`<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`);
+                                    while (index !== -1) {
+                                        const element = closest(this.shadowRoot.innerHTML, index);
+                                        const original = this.shadowRoot.querySelector(selector(element));
+                                        if (!original)
+                                            return;
+                                        replace(original, `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`, `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);
+                                        index = this.shadowRoot.innerHTML.indexOf(`<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`, index + 1);
+                                    }
                                 },
                             ],
                         ],

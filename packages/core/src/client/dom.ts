@@ -33,21 +33,33 @@ export const closest = (body: string, stringIndex: number): Element | null => {
 
     const tag = body.substring(leftIndex + 1, rightIndex).split(' ')[0];
 
-    for (let i = 0; i < htmlCollection.length; i++) {
-        const element = htmlCollection[i];
+    const validate = (collection: HTMLCollection) => {
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
 
-        if (element.tagName.toLowerCase() !== tag.replace('/', '')) continue;
+            if (element.tagName.toLowerCase() !== tag.replace('/', '')) continue;
 
-        if (
-            !body.slice(0, leftIndex).endsWith(element.innerHTML) &&
-            !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML)
-        )
-            continue;
+            if (
+                !body.slice(0, leftIndex).endsWith(element.innerHTML) &&
+                !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML)
+            )
+                continue;
 
-        return element;
-    }
+            return element;
+        }
 
-    return null;
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
+
+            if (element.children.length > 0) {
+                const result = validate(element.children);
+
+                if (result) return result;
+            }
+        }
+    };
+
+    return validate(htmlCollection);
 };
 
 export const selector = (element: Element | HTMLElement): string => {

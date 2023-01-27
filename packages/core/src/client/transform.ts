@@ -146,29 +146,46 @@ export const EtcherElement = class extends HTMLElement {
                         );
                     }
 
-                    ret = String(wrappedEval(p1, this._lexicalScope, '$'));
+                    ret = String(
+                        wrappedEval(
+                            p1,
+                            {
+                                [p1.split('.')[1].replace(/\?$/, '')]: undefined,
+                            },
+                            '$'
+                        )
+                    );
+
+                    if (this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')])
+                        return `<!-- etcher:is ${p1} -->${ret}<!-- etcher:ie -->`;
 
                     this._lexicalScope[p1.split('.')[1].replace(/\?$/, '')] = {
                         accessors: [
                             [
                                 this,
                                 (last, value) => {
-                                    const element = closest(
-                                        this.shadowRoot.innerHTML,
-                                        this.shadowRoot.innerHTML.indexOf(
-                                            `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`
-                                        )
+                                    let index = this.shadowRoot.innerHTML.indexOf(
+                                        `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`
                                     );
 
-                                    const original = this.shadowRoot.querySelector(selector(element));
+                                    while (index !== -1) {
+                                        const element = closest(this.shadowRoot.innerHTML, index);
 
-                                    if (!original) return;
+                                        const original = this.shadowRoot.querySelector(selector(element));
 
-                                    replace(
-                                        original,
-                                        `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`,
-                                        `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`
-                                    );
+                                        if (!original) return;
+
+                                        replace(
+                                            original,
+                                            `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`,
+                                            `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`
+                                        );
+
+                                        index = this.shadowRoot.innerHTML.indexOf(
+                                            `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`,
+                                            index + 1
+                                        );
+                                    }
                                 },
                             ],
                         ],

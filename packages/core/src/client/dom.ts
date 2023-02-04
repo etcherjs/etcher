@@ -1,93 +1,158 @@
+type DOMElement = {
+    element: Element | HTMLElement;
+    attributes: { [key: string]: string };
+    tag: string;
+    content: string;
+    contentLength: number;
+    indexRange: [number, number];
+    children: DOMElement[];
+    selector: string;
+};
+
 export const html = (body: string): HTMLCollection => {
-    const template = document.createElement('template');
+    const div = document.createElement('div');
+    div.setAttribute('_etcher_root_', 'true');
 
-    template.innerHTML = body;
+    div.innerHTML = body;
 
-    return template.content.children;
+    return div.children;
 };
 
 export const replace = (element: Element | HTMLElement, find: string, replace: string): Element | HTMLElement => {
     const html = element.innerHTML;
 
-    const index = html.indexOf(find);
-
-    if (index < 0) return;
-
-    element.innerHTML = html.substring(0, index) + replace + html.substring(index + find.length);
+    element.innerHTML = html.replace(find, replace);
 
     return element;
 };
 
-export const closest = (body: string, stringIndex: number): Element | null => {
-    const htmlCollection = html(body);
+export const map = (body: string, orignalBody?: string): DOMElement[] => {
+    const collection = html(body);
 
-    if (htmlCollection.length < 0) return;
+    let index = 0;
 
-    let leftIndex = body.lastIndexOf('<', stringIndex);
-    let rightIndex = body.indexOf('>', leftIndex);
+    return Array.from(collection).map((element, i) => {
+        let selector = ``;
 
-    if (body[leftIndex + 1] === '!') {
-        leftIndex = body.lastIndexOf('<', leftIndex - 1);
-        rightIndex = body.indexOf('>', leftIndex);
-    }
+        index = (orignalBody ? orignalBody : body).indexOf(element.outerHTML, index);
 
-    const tag = body.substring(leftIndex + 1, rightIndex).split(' ')[0];
+        const attributes: { [key: string]: string } = {};
 
-    const validate = (collection: HTMLCollection) => {
-        for (let i = 0; i < collection.length; i++) {
-            const element = collection[i];
-
-            if (element.tagName.toLowerCase() !== tag.replace('/', '')) continue;
-
-            if (
-                !body.slice(0, leftIndex).endsWith(element.innerHTML) &&
-                !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML)
-            )
-                continue;
-
-            return element;
+        for (const attribute of element.attributes) {
+            attributes[attribute.name] = attribute.value;
         }
 
-        for (let i = 0; i < collection.length; i++) {
-            const element = collection[i];
-
-            if (element.children.length > 0) {
-                const result = validate(element.children);
-
-                if (result) return result;
-            }
-        }
-    };
-
-    return validate(htmlCollection);
-};
-
-export const selector = (element: Element | HTMLElement): string => {
-    let path = ``;
-
-    while (element) {
         const tag = element.tagName.toLowerCase();
 
-        const id = element.id ? `#${element.id}` : ``;
+        const content = element.innerHTML;
 
-        const classes = element.className
-            ? `.${element.className
-                  .split(' ')
-                  .filter((c) => c)
-                  .join('.')}`
-            : ``;
+        const contentLength = content.length;
+        const indexRange: [number, number] = [index, index + element.outerHTML.length];
 
-        const selector = `${tag}${id}${classes}`;
+        index += element.outerHTML.split(element.innerHTML)[0].length;
+        index += contentLength;
+        index += element.outerHTML.split(element.innerHTML)[1].length;
 
-        if (element.parentElement && element.parentElement?.children?.length !== 1) {
-            const index = Array.from(element.parentElement.children).indexOf(element);
+        const children = element.children.length ? map(element.innerHTML, orignalBody ? orignalBody : body) : [];
 
-            path = path ? `${selector}:nth-child(${index + 1}) > ${path}` : `${selector}:nth-child(${index + 1})`;
-        } else {
-            path = path ? `${selector} > ${path}` : selector;
+        selector += tag;
+
+        if (attributes.id) selector += `#${attributes.id}`;
+        if (attributes.class) selector += `.${attributes.class}`;
+
+        return {
+            element,
+            attributes,
+            tag,
+            content,
+            contentLength,
+            indexRange,
+            children,
+            selector,
+        };
+    });
+};
+
+export const parent = (body: string, stringIndex: number): Element | null => {
+    const dom = map(body);
+
+    const children = (ele: DOMElement): boolean => {
+        const val = ele.children.some((child) => {
+            const [start, end] = child.indexRange;
+
+            if (stringIndex >= start && stringIndex <= end) {
+                return true;
+            }
+
+            if (child.children.length) {
+                return children(child);
+            }
+        });
+
+        return val;
+    };
+
+    const find = (dom: DOMElement[], stringIndex: number): DOMElement | null => {
+        for (const element of dom) {
+            const [start, end] = element.indexRange;
+
+            if (stringIndex >= start && stringIndex <= end) {
+                if (element.children.length) {
+                    if (children(element)) {
+                        return find(element.children, stringIndex);
+                    } else {
+                        return element;
+                    }
+                } else {
+                    return element;
+                }
+            }
         }
 
-        element = element.parentElement;
+        return null;
+    };
+
+    const element = find(dom, stringIndex);
+
+    return element ? element.element : null;
+};
+
+export const selector = (tree: DOMElement[], element: Element | HTMLElement): string => {
+    let path = ``;
+
+    const isElement = (ele: DOMElement): boolean => {
+        const tags = ele.element.tagName === element.tagName;
+        const classes = ele.element.className === element.className;
+        const ids = ele.element.id === element.id;
+        const innerHTML = ele.element.innerHTML === element.innerHTML;
+
+        return tags && classes && ids && innerHTML;
+    };
+
+    const find = (tree: DOMElement[], element: Element | HTMLElement): DOMElement | null => {
+        for (const ele of tree) {
+            if (isElement(ele)) {
+                return ele;
+            }
+
+            if (ele.children.length) {
+                const child = find(ele.children, element);
+
+                if (child) {
+                    return child;
+                }
+            }
+        }
+
+        return null;
+    };
+
+    const elementPath = find(tree, element);
+
+    if (elementPath) {
+        const { selector } = elementPath;
+
+        path += selector;
     }
 
     return path;

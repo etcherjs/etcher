@@ -1,6 +1,6 @@
 import { parseJSON, formatVariableName, wrappedEval, loopMatches, replaceEntities } from './util';
 import { parseExpression, parseBetweenPairs } from './parse';
-import { html, replace, closest, selector } from './dom';
+import { html, replace, parent, selector, map } from './dom';
 import { error, warn } from './log';
 
 export const EtcherElement = class extends HTMLElement {
@@ -169,9 +169,11 @@ export const EtcherElement = class extends HTMLElement {
                                     );
 
                                     while (index !== -1) {
-                                        const element = closest(this.shadowRoot.innerHTML, index);
+                                        const element = parent(this.shadowRoot.innerHTML, index);
 
-                                        const original = this.shadowRoot.querySelector(selector(element));
+                                        const original = this.shadowRoot.querySelector(
+                                            selector(map(this.shadowRoot.innerHTML), element)
+                                        );
 
                                         if (!original) return;
 

@@ -85,70 +85,114 @@ const parseBetweenPairs = (index, chars, doc) => {
 };
 
 const html = (body) => {
-    const template = document.createElement('template');
-    template.innerHTML = body;
-    return template.content.children;
+    const div = document.createElement('div');
+    div.setAttribute('_etcher_root_', 'true');
+    div.innerHTML = body;
+    return div.children;
 };
 const replace = (element, find, replace) => {
     const html = element.innerHTML;
-    const index = html.indexOf(find);
-    if (index < 0)
-        return;
-    element.innerHTML = html.substring(0, index) + replace + html.substring(index + find.length);
+    element.innerHTML = html.replace(find, replace);
     return element;
 };
-const closest = (body, stringIndex) => {
-    const htmlCollection = html(body);
-    if (htmlCollection.length < 0)
-        return;
-    let leftIndex = body.lastIndexOf('<', stringIndex);
-    let rightIndex = body.indexOf('>', leftIndex);
-    if (body[leftIndex + 1] === '!') {
-        leftIndex = body.lastIndexOf('<', leftIndex - 1);
-        rightIndex = body.indexOf('>', leftIndex);
-    }
-    const tag = body.substring(leftIndex + 1, rightIndex).split(' ')[0];
-    const validate = (collection) => {
-        for (let i = 0; i < collection.length; i++) {
-            const element = collection[i];
-            if (element.tagName.toLowerCase() !== tag.replace('/', ''))
-                continue;
-            if (!body.slice(0, leftIndex).endsWith(element.innerHTML) &&
-                !body.slice(rightIndex + 1, -1).startsWith(element.innerHTML))
-                continue;
-            return element;
+const map = (body, orignalBody) => {
+    const collection = html(body);
+    let index = 0;
+    return Array.from(collection).map((element, i) => {
+        let selector = ``;
+        index = (orignalBody ? orignalBody : body).indexOf(element.outerHTML, index);
+        const attributes = {};
+        for (const attribute of element.attributes) {
+            attributes[attribute.name] = attribute.value;
         }
-        for (let i = 0; i < collection.length; i++) {
-            const element = collection[i];
-            if (element.children.length > 0) {
-                const result = validate(element.children);
-                if (result)
-                    return result;
+        const tag = element.tagName.toLowerCase();
+        const content = element.innerHTML;
+        const contentLength = content.length;
+        const indexRange = [index, index + element.outerHTML.length];
+        index += element.outerHTML.split(element.innerHTML)[0].length;
+        index += contentLength;
+        index += element.outerHTML.split(element.innerHTML)[1].length;
+        const children = element.children.length ? map(element.innerHTML, orignalBody ? orignalBody : body) : [];
+        selector += tag;
+        if (attributes.id)
+            selector += `#${attributes.id}`;
+        if (attributes.class)
+            selector += `.${attributes.class}`;
+        return {
+            element,
+            attributes,
+            tag,
+            content,
+            contentLength,
+            indexRange,
+            children,
+            selector,
+        };
+    });
+};
+const parent = (body, stringIndex) => {
+    const dom = map(body);
+    const children = (ele) => {
+        const val = ele.children.some((child) => {
+            const [start, end] = child.indexRange;
+            if (stringIndex >= start && stringIndex <= end) {
+                return true;
+            }
+            if (child.children.length) {
+                return children(child);
+            }
+        });
+        return val;
+    };
+    const find = (dom, stringIndex) => {
+        for (const element of dom) {
+            const [start, end] = element.indexRange;
+            if (stringIndex >= start && stringIndex <= end) {
+                if (element.children.length) {
+                    if (children(element)) {
+                        return find(element.children, stringIndex);
+                    }
+                    else {
+                        return element;
+                    }
+                }
+                else {
+                    return element;
+                }
             }
         }
+        return null;
     };
-    return validate(htmlCollection);
+    const element = find(dom, stringIndex);
+    return element ? element.element : null;
 };
-const selector = (element) => {
+const selector = (tree, element) => {
     let path = ``;
-    while (element) {
-        const tag = element.tagName.toLowerCase();
-        const id = element.id ? `#${element.id}` : ``;
-        const classes = element.className
-            ? `.${element.className
-                .split(' ')
-                .filter((c) => c)
-                .join('.')}`
-            : ``;
-        const selector = `${tag}${id}${classes}`;
-        if (element.parentElement && element.parentElement?.children?.length !== 1) {
-            const index = Array.from(element.parentElement.children).indexOf(element);
-            path = path ? `${selector}:nth-child(${index + 1}) > ${path}` : `${selector}:nth-child(${index + 1})`;
+    const isElement = (ele) => {
+        const tags = ele.element.tagName === element.tagName;
+        const classes = ele.element.className === element.className;
+        const ids = ele.element.id === element.id;
+        const innerHTML = ele.element.innerHTML === element.innerHTML;
+        return tags && classes && ids && innerHTML;
+    };
+    const find = (tree, element) => {
+        for (const ele of tree) {
+            if (isElement(ele)) {
+                return ele;
+            }
+            if (ele.children.length) {
+                const child = find(ele.children);
+                if (child) {
+                    return child;
+                }
+            }
         }
-        else {
-            path = path ? `${selector} > ${path}` : selector;
-        }
-        element = element.parentElement;
+        return null;
+    };
+    const elementPath = find(tree);
+    if (elementPath) {
+        const { selector } = elementPath;
+        path += selector;
     }
     return path;
 };
@@ -265,8 +309,8 @@ const EtcherElement = class extends HTMLElement {
                                 (last, value) => {
                                     let index = this.shadowRoot.innerHTML.indexOf(`<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`);
                                     while (index !== -1) {
-                                        const element = closest(this.shadowRoot.innerHTML, index);
-                                        const original = this.shadowRoot.querySelector(selector(element));
+                                        const element = parent(this.shadowRoot.innerHTML, index);
+                                        const original = this.shadowRoot.querySelector(selector(map(this.shadowRoot.innerHTML), element));
                                         if (!original)
                                             return;
                                         replace(original, `<!-- etcher:is ${p1} -->${last}<!-- etcher:ie -->`, `<!-- etcher:is ${p1} -->${value}<!-- etcher:ie -->`);

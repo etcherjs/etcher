@@ -8,7 +8,11 @@
 [latest-img]: https://img.shields.io/npm/v/@etcher/core/latest?color=d34ebb&label=latest&style=for-the-badge
 [next-img]: https://img.shields.io/npm/v/@etcher/core/next?color=d34ebb&label=next&style=for-the-badge
 [license-img]: https://img.shields.io/npm/l/@etcher/core?color=d34ebb&style=for-the-badge
+[discord-img]: https://img.shields.io/badge/Discord-d34ebb?style=for-the-badge
+[site-img]: https://img.shields.io/badge/EtcherJS-d34ebb?style=for-the-badge
 
+[![EtcherJS][site-img]](https://etcherjs.vercel.app)
+[![Discord][discord-img]](https://discord.gg/Vqd3BRFR5D)
 [![Size][size-img]](https://bundlephobia.com/result?p=@etcher/core)
 [![Latest][latest-img]](https://www.npmjs.com/package/@etcher/core)
 [![Next][next-img]](https://www.npmjs.com/package/@etcher/core)

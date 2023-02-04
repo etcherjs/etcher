@@ -1,9 +1,6 @@
 import { Chunk } from '../types';
 
 export const generateChunkFunction = (chunk: Chunk): string => {
-    console.log(chunk.data);
-    console.log(chunk.data.replaceAll('\n', '\\n'));
-
     return `export default function ${chunk.name.replace(/\W/g, '_')}() {
     window.etcher.transform(\`${chunk.data.replaceAll('\n', '\\n')}\`, '${chunk.chunkName}');
 }

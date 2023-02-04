@@ -1,14 +1,15 @@
 import { processChunk, parseFile, done, resetChunks, clientJS, CHUNK_REGISTRY } from './index.js';
+import { generateChunkFunction, generateChunkImport } from './generator.js';
 import { whitespace, log, error, divider } from '../util/logger.js';
 import { isEtcherFile } from '../util/files.js';
 import { runHooks } from '../config/plugins.js';
 import { getConfig } from '../config/index.js';
 import { HOOK_TYPES } from '../constants.js';
+import { dirname } from '../util/node.js';
 import { minify } from 'terser';
 import chalk from 'chalk';
 import path from 'path';
 import fs from 'fs';
-import { dirname } from '../util/node.js';
 
 export const generateCoreFile = async (shouldLog: boolean = true) => {
     try {
@@ -116,22 +117,16 @@ export const migratePages = async () => {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',
-                        `<script type="module">
-                        ${(await minify(clientJS)).code}
-                        //# sourceURL=client.js
-                        </script>
-                        </body>`
+                        `<script type="module">${
+                            (await minify(clientJS)).code
+                        }\n\n//# sourceURL=client.js</script></body>`
                     )
                 );
 
                 CHUNK_REGISTRY.forEach((chunk) => {
                     if (!fileData.includes(chunk.chunkName)) return;
 
-                    fileData = fileData.replace(
-                        '</body>',
-                        `<script type="module" src="/@etcher/${chunk.chunkName}.js"></script>
-                        </body>`
-                    );
+                    fileData = fileData.replace('</body>', generateChunkImport(chunk));
                 });
             }
 
@@ -186,10 +181,7 @@ export const migratePages = async () => {
         fs.mkdirSync(path.join(config.output, '@etcher'));
 
         CHUNK_REGISTRY.forEach((chunk) => {
-            fs.writeFileSync(
-                path.join(config.output, `@etcher/${chunk.chunkName}.js`),
-                `window.etcher.transform(\`${chunk.data}\`, '${chunk.chunkName}');\n\n//# sourceURL=${chunk.chunkName}.js`
-            );
+            fs.writeFileSync(path.join(config.output, `@etcher/${chunk.chunkName}.js`), generateChunkFunction(chunk));
         });
 
         whitespace();

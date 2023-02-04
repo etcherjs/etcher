@@ -4,7 +4,7 @@ export const generateChunkFunction = (chunk: Chunk): string => {
     console.log(chunk.data);
     console.log(chunk.data.replaceAll('\n', '\\n'));
 
-    return `export default function ${chunk.name.replace(' ', '_')}() {
+    return `export default function ${chunk.name.replace(/\W/g, '_')}() {
     window.etcher.transform(\`${chunk.data.replaceAll('\n', '\\n')}\`, '${chunk.chunkName}');
 }
     
@@ -13,8 +13,8 @@ export const generateChunkFunction = (chunk: Chunk): string => {
 
 export const generateChunkImport = (chunk: Chunk): string => {
     return `<script type="module">
-import ${chunk.name.replace('', '_')} from '/@etcher/${chunk.chunkName}.js';
+import ${chunk.name.replace(/\W/g, '_')} from '/@etcher/${chunk.chunkName}.js';
 
-${chunk.name.replace('', '_')}();
+${chunk.name.replace(/\W/g, '_')}();
 </script></body>`;
 };

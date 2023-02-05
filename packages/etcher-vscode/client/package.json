@@ -1,0 +1,22 @@
+{
+    "name": "etcher-vscode-client",
+    "description": "Client side of etcher-vscode",
+    "author": "TheCommieAxolotl",
+    "license": "MIT",
+    "version": "0.0.1",
+    "publisher": "TheCommieAxolotl",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Microsoft/vscode-extension-samples"
+    },
+    "engines": {
+        "vscode": "^1.63.0"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^7.0.0"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.63.0",
+        "@vscode/test-electron": "^2.1.2"
+    }
+}

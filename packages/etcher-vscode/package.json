@@ -1,27 +1,48 @@
 {
     "name": "etcher-vscode",
-    "displayName": "etcher-vscode",
-    "description": "Adds Etcher support to your IDE",
-    "version": "1.0.3",
+    "displayName": "EtcherJS",
+    "description": "Adds Etcher support to your vscode.",
+    "version": "1.1.0",
     "license": "MIT",
-    "engines": {
-        "vscode": "^1.72.0"
-    },
     "icon": "assets/icon.png",
-    "publisher": "TheCommieAxolotl",
-    "categories": [
-        "Other"
-    ],
+    "author": "TheCommieAxolotl",
     "repository": {
         "type": "git",
         "url": "https://github.com/etcherjs/etcher"
     },
-    "activationEvents": [
-        "onCommand:etcher-vscode.createComponent",
-        "onLanguage:html"
+    "publisher": "TheCommieAxolotl",
+    "categories": [],
+    "keywords": [
+        "multi-root ready"
     ],
-    "main": "./out/extension.js",
+    "engines": {
+        "vscode": "^1.74.0"
+    },
+    "activationEvents": [
+        "onLanguage:xtml"
+    ],
+    "main": "./client/out/extension",
+    "capabilities": {
+        "definitionProvider": true,
+        "referencesProvider": true,
+        "renameProvider": true
+    },
     "contributes": {
+        "configuration": {
+            "title": "Etcher",
+            "properties": {
+                "etcher-vscode.lint": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Let etcher check for errors and mistakes in your code."
+                },
+                "etcher-vscode.emmet": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable emmet-like autocomplete for Etcher files."
+                }
+            }
+        },
         "languages": [
             {
                 "id": "etcher",
@@ -33,14 +54,14 @@
                 "extensions": [
                     ".xtml"
                 ],
-                "configuration": "./language-configuration.json"
+                "configuration": "./client/language-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "etcher",
                 "scopeName": "source.etcher",
-                "path": "./syntaxes/etcher.tmLanguage.json"
+                "path": "./client/syntaxes/etcher.tmLanguage.json"
             }
         ],
         "commands": [
@@ -60,24 +81,20 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "pnpm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "pnpm run compile && pnpm run lint",
-        "lint": "eslint src --ext ts"
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -b",
+        "watch": "tsc -b -w",
+        "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
+        "test": "sh ./scripts/e2e.sh"
     },
     "devDependencies": {
-        "@types/vscode": "^1.72.0",
-        "@types/glob": "^8.0.0",
-        "@types/mocha": "^10.0.0",
-        "@types/node": "16.x",
-        "@typescript-eslint/eslint-plugin": "^5.38.1",
-        "@typescript-eslint/parser": "^5.38.1",
-        "eslint": "^8.24.0",
-        "glob": "^8.0.3",
-        "mocha": "^10.0.0",
-        "typescript": "^4.8.4",
-        "@vscode/test-electron": "^2.1.5"
+        "@types/mocha": "^9.1.0",
+        "@types/node": "^16.11.7",
+        "@typescript-eslint/eslint-plugin": "^5.42.0",
+        "@typescript-eslint/parser": "^5.42.0",
+        "eslint": "^8.26.0",
+        "mocha": "^9.2.1",
+        "typescript": "^4.9.4"
     },
     "__metadata": {
         "id": "84e0e595-31f9-4d50-b1a6-13af2e91087b",

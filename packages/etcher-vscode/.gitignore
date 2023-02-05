@@ -1,4 +1,4 @@
-.vscode-test/**
-vsc-extension-quickstart.md
-.pnpm-debug.log
-*.vsix
+out
+node_modules
+client/server
+.vscode-test

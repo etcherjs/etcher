@@ -166,12 +166,12 @@ export const parseHTMLTemplate = (template: string): Node[] => {
 
                 if (isInterpolation) {
                     const content = valueBetweenPairs(node.content, '{{', '}}');
+                    const before = node.content.substring(0, node.content.indexOf('{{'));
+                    const after = node.content.substring(node.content.indexOf('}}') + 2);
 
-                    oAST.push(
-                        createText(node.content.substring(0, node.content.indexOf('{{'))),
-                        createInterpolation(content),
-                        createText(node.content.substring(node.content.indexOf('}}') + 2))
-                    );
+                    before && oAST.push(createText(before));
+                    oAST.push(createInterpolation(content));
+                    after && oAST.push(createText(after));
                     break;
                 }
 
@@ -205,12 +205,12 @@ export const parseHTMLTemplate = (template: string): Node[] => {
 
                             if (isInterpolation) {
                                 const content = valueBetweenPairs(child.content, '{{', '}}');
+                                const before = child.content.substring(0, child.content.indexOf('{{'));
+                                const after = child.content.substring(child.content.indexOf('}}') + 2);
 
-                                childNodes.push(
-                                    createText(child.content.substring(0, child.content.indexOf('{{'))),
-                                    createInterpolation(content),
-                                    createText(child.content.substring(child.content.indexOf('}}') + 2))
-                                );
+                                before && childNodes.push(createText(before));
+                                childNodes.push(createInterpolation(content));
+                                after && childNodes.push(createText(after));
                                 break;
                             }
 

@@ -9,10 +9,6 @@ export const walkFrom = (ast: Node[], to: Node): number[] => {
                 return null;
             }
 
-            if (node.type === 'Comment') {
-                return null;
-            }
-
             return node;
         })
         .filter(Boolean);

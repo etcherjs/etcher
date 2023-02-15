@@ -1,5 +1,5 @@
-import { template, listen, insert } from './dom';
 import EtcherElement, { STD_ELEMENT_FOR, STD_ELEMENT_IF, STD_ELEMENT_LOOP, transform } from './element';
+import { template, listen, insert } from './dom';
 import { createSignal } from './constructs';
 
 declare global {

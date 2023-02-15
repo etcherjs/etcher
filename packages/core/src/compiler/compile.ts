@@ -12,9 +12,9 @@ import {
     raw as createRaw,
 } from './js/types.js';
 import { htmlFrom, parseHTMLTemplate, reverseTransformVoid } from './template/index.js';
-import { createRoot, ElementNode, Node, RootNode, TextNode } from './template/types.js';
-import { jsFrom, unique } from './js/index.js';
+import { createRoot, Node, RootNode, TextNode } from './template/types.js';
 import { walkFrom, walkKeyword } from './template/walker.js';
+import { jsFrom, unique } from './js/index.js';
 
 type CompilerOptions = {
     mode?: 'component' | 'page';

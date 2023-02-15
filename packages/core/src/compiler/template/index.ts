@@ -1,5 +1,3 @@
-import { parse, stringify } from 'html-parse-string';
-
 import {
     Node,
     create,
@@ -11,7 +9,7 @@ import {
     createText,
     createInterpolation,
 } from './types.js';
-
+import { parse, stringify } from 'html-parse-string';
 import crypto from 'crypto';
 
 const VOID_TAGS = ['If', 'For', 'Loop'];

@@ -24,7 +24,7 @@ export const processChunk = async (name: string, data: string) => {
     try {
         id++;
 
-        const suffix = crypto.randomBytes(4).toString('hex');
+        const suffix = crypto.createHash('SHA256').update(name).digest('hex').slice(0, 8);
         const chunkName = `etcher-${suffix}`;
 
         const chunk: Chunk = {

@@ -117,9 +117,9 @@ export const migratePages = async () => {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',
-                        `<script type="module">${
-                            (await minify(clientJS)).code
-                        }\n\n//# sourceURL=client.js</script></body>`
+                        `<script type="module">${(
+                            await minify(clientJS)
+                        ).code.trim()}\n\n//# sourceURL=client.js</script></body>`
                     )
                 );
 

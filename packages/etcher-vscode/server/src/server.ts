@@ -25,18 +25,12 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
     const capabilities = params.capabilities;
 
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
-    hasDiagnosticRelatedInformationCapability = !!(
-        capabilities.textDocument &&
-        capabilities.textDocument.publishDiagnostics &&
-        capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
 
     const result: InitializeResult = {
         capabilities: {
@@ -111,9 +105,7 @@ connection.onHover((params: HoverParams) => {
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    const items = CompletionHandler(globalSettings, documents, textDocumentPosition);
-
-    return items;
+    return CompletionHandler(globalSettings, documents, textDocumentPosition);
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {

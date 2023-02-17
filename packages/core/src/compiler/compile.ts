@@ -24,13 +24,66 @@ type CompilerOptions = {
 
 type CodegenResult = {
     ast: RootNode;
+    findNodes: (tag: string) => Node[];
+    findTextContent: (tag: string) => string[];
 };
 
 export const compileToAST = (template: string, options?: CompilerOptions): CodegenResult => {
     const ast = parseHTMLTemplate(template);
 
+    const findNodes = (tag: string) => {
+        let list: Node[] = [];
+
+        const find = (nodes: Node[]) => {
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+
+                if (node.type !== 'Element') continue;
+
+                find(node.children);
+
+                if (node.tag !== tag) continue;
+
+                list.push(node);
+            }
+        };
+
+        find(ast);
+
+        return list;
+    };
+
+    const findTextContent = (tag: string) => {
+        let list: string[] = [];
+
+        const find = (nodes: Node[]) => {
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+
+                if (node.type !== 'Element') continue;
+
+                find(node.children);
+
+                if (node.tag !== tag) continue;
+
+                list.push(
+                    node.children
+                        .map((c) => c.type === 'Text' && c.data)
+                        .filter(Boolean)
+                        .join('\n')
+                );
+            }
+        };
+
+        find(ast);
+
+        return list;
+    };
+
     return {
         ast: createRoot(ast),
+        findNodes,
+        findTextContent,
     };
 };
 

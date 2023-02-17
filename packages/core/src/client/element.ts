@@ -29,8 +29,8 @@ export class STD_ELEMENT_FOR extends HTMLElement {
     constructor() {
         super();
 
-        const items = wrappedEval(this.getAttribute('items'));
-        const label = this.getAttribute('label');
+        const items = wrappedEval(this.getAttribute('items')) || wrappedEval(this.getAttribute('default')) || [];
+        const label = this.getAttribute('label') || 'item';
 
         const shadow = this.attachShadow({
             mode: 'open',
@@ -74,7 +74,7 @@ export class STD_ELEMENT_LOOP extends HTMLElement {
     constructor() {
         super();
 
-        const iterations = this.getAttribute('iterations');
+        const iterations = this.getAttribute('iterations') || this.getAttribute('default');
 
         const shadow = this.attachShadow({
             mode: 'open',
@@ -118,7 +118,7 @@ export class STD_ELEMENT_IF extends HTMLElement {
     constructor() {
         super();
 
-        const condition = wrappedEval(this.getAttribute('condition'));
+        const condition = wrappedEval(this.getAttribute('condition')) || wrappedEval(this.getAttribute('default'));
 
         const shadow = this.attachShadow({
             mode: 'open',

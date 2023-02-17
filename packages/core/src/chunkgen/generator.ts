@@ -4,7 +4,7 @@ import { Chunk } from '../types';
 export const generateChunkFunction = (chunk: Chunk): string => {
     const parsed = compileToAST(chunk.data);
 
-    const exportJS = getExported(chunk.chunkName, parsed.ast);
+    const exportJS = getExported(chunk.chunkName, parsed.ast, parsed.findTextContent('script').join('\n'));
 
     return `${exportJS}\n\n//# sourceURL=${chunk.name}.xtml`;
 };

@@ -55,8 +55,8 @@ const testForInterpolation = (str: string): boolean => {
 
 const transformVoid = (template: string): string => {
     const scriptTags = template.match(/<script.*?>([\s\S]*?)<\/script>/g);
-    const eventAttributes = template.match(/@[\w-]+=\{((?:[\s\S])*)}/g);
-    const computedAttributes = template.match(/#[\w-]+=\{((?:[\s\S])*)}/g);
+    const eventAttributes = template.match(/@[\w-]+=\{((?:[\s\S](?!<\/))*)}/gs);
+    const computedAttributes = template.match(/#[\w-]+=\{((?:[\s\S](?!<\/))*)}/gs);
 
     const processEntities = (str: string, whitespace = false): string => {
         return whitespace
@@ -107,8 +107,8 @@ const transformVoid = (template: string): string => {
 
 export const reverseTransformVoid = (template: string, whole = false): string => {
     const scriptTags = template.match(/<script.*?>([\s\S]*?)<\/script>/g);
-    const eventAttributes = template.match(/@[\w-]+=\{([\s\S]*)}/g);
-    const computedAttributes = template.match(/#[\w-]+=\{([\s\S]*)}/g);
+    const eventAttributes = template.match(/@[\w-]+=\{((?:[\s\S](?!<\/))*)}/gs);
+    const computedAttributes = template.match(/#[\w-]+=\{((?:[\s\S](?!<\/))*)}/gs);
 
     const processEntities = (str: string): string => {
         return str
@@ -188,7 +188,8 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                 let childNodes: Node[] = [];
                 let attributes: {
                     [key: string]: {
-                        key: string;
+                        default?: boolean;
+                        key?: string;
                         value: string;
                         inline: boolean;
                         isComputed: boolean;
@@ -230,6 +231,23 @@ export const parseHTMLTemplate = (template: string): Node[] => {
 
                 for (let j = 0; j < Object.keys(attrs).length; j++) {
                     const attr = Object.entries(attrs)[j];
+
+                    console.log(attr, attrs);
+
+                    console.log(attr[1] === '' && Object.keys(attr).length === 1);
+                    console.log(attr[1], '');
+                    console.log(Object.keys(attrs).length, 1);
+
+                    if (attr[1] === '' && Object.keys(attrs).length === 1) {
+                        attributes['default'] = {
+                            default: true,
+                            key: 'default',
+                            value: attr[0].replace(/^"|"$|^{|}$/g, ''),
+                            inline: attr[1].startsWith('"') && attr[1].endsWith('"'),
+                            isComputed: (attr[1].startsWith('{') && attr[1].endsWith('}')) || attr[0].startsWith('#'),
+                            isEventHandler: attr[0].startsWith('@'),
+                        };
+                    }
 
                     attributes[attr[0]] = {
                         key: attr[0].replace(/^[@#]/, ''),

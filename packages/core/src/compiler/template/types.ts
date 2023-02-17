@@ -21,7 +21,8 @@ export type ElementNode = {
     tag: string;
     attributes: {
         [key: string]: {
-            key: string;
+            default?: boolean;
+            key?: string;
             value: string;
             inline: boolean;
             isComputed: boolean;
@@ -73,7 +74,8 @@ export const create = (
     tag: string,
     props: {
         [key: string]: {
-            key: string;
+            default?: boolean;
+            key?: string;
             value: string;
             inline: boolean;
             isComputed: boolean;

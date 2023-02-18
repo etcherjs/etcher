@@ -84,8 +84,7 @@
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -b",
         "watch": "tsc -b -w",
-        "lint": "eslint ./client/src ./server/src --ext .ts,.tsx",
-        "test": "sh ./scripts/e2e.sh"
+        "lint": "eslint ./client/src ./server/src --ext .ts,.tsx"
     },
     "devDependencies": {
         "@types/mocha": "^9.1.0",

@@ -1,5 +1,5 @@
 # local testing
-test/core
+tests/core
 etcher.config.js
 
 # dependencies

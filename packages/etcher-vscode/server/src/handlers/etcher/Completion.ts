@@ -7,8 +7,8 @@ import {
     TextDocuments,
 } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Settings, VALID_HTML_TAGS } from '../constants';
-import { retrieveConfig } from '../config';
+import { Settings, VALID_HTML_TAGS } from '../../constants';
+import { retrieveConfig } from '../../config';
 
 import * as path from 'path';
 import * as fs from 'fs';

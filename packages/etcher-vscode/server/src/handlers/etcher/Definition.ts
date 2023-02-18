@@ -1,6 +1,6 @@
 import { DefinitionParams, TextDocuments, Location } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { retrieveConfig } from '../config';
+import { retrieveConfig } from '../../config';
 
 import * as path from 'path';
 import * as fs from 'fs';

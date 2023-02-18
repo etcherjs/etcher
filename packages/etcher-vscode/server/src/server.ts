@@ -13,11 +13,8 @@ import {
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { CompletionHandler, CompletionResolveHandler } from './handlers/Completion';
-import { validateXTMLDocument } from './handlers/Validate';
-import DefinitionHandler from './handlers/Definition';
-import HoverHandler from './handlers/Hover';
 import { Settings } from './constants';
+import Handlers from './handlers';
 
 const connection = createConnection(ProposedFeatures.all);
 
@@ -70,7 +67,7 @@ connection.onDidChangeConfiguration((change) => {
         globalSettings = <Settings>(change.settings.languageServerExample || defaultSettings);
     }
 
-    documents.all().forEach((d) => validateXTMLDocument(globalSettings, connection, d));
+    documents.all().forEach((d) => Handlers.Validate(globalSettings, connection, d));
 });
 
 function getDocumentSettings(resource: string): Thenable<Settings> {
@@ -93,23 +90,23 @@ documents.onDidClose((e) => {
 });
 
 documents.onDidChangeContent(async (change) => {
-    validateXTMLDocument(await getDocumentSettings(change.document.uri), connection, change.document);
+    Handlers.Validate(await getDocumentSettings(change.document.uri), connection, change.document);
 });
 
 connection.onDefinition((params) => {
-    return DefinitionHandler(documents, params);
+    return Handlers.Definition(documents, params);
 });
 
 connection.onHover((params: HoverParams) => {
-    return HoverHandler(documents, params);
+    return Handlers.Hover(documents, params);
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    return CompletionHandler(globalSettings, documents, textDocumentPosition);
+    return Handlers.Completion(globalSettings, documents, textDocumentPosition);
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-    return CompletionResolveHandler(documents, item);
+    return Handlers.CompletionResolve(documents, item);
 });
 
 documents.listen(connection);

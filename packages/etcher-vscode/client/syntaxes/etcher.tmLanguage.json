@@ -311,7 +311,7 @@
                     }
                 },
                 {
-                    "begin": "([#@]?[a-zA-Z0-9\\-:]+)\\s*=\\s*\\{",
+                    "begin": "(([#@]?[a-zA-Z0-9\\-:]+)\\s*=\\s*)?\\{",
                     "end": "\\}",
                     "beginCaptures": {
                         "0": {
@@ -447,9 +447,6 @@
         "etcher": {
             "patterns": [
                 {
-                    "include": "#special-tags-void"
-                },
-                {
                     "include": "#interpolation"
                 },
                 {
@@ -475,31 +472,6 @@
             "patterns": [
                 {
                     "include": "source.js"
-                }
-            ]
-        },
-        "special-tags-void": {
-            "begin": "\\{([#@:/][a-zA-Z0-9\\-:]+)",
-            "end": "\\}",
-            "beginCaptures": {
-                "0": {
-                    "name": "punctuation.definition.tag.begin.etcher"
-                },
-                "1": {
-                    "name": "entity.other.attribute-name.etcher"
-                }
-            },
-            "endCaptures": {
-                "0": {
-                    "name": "punctuation.definition.tag.end.etcher"
-                }
-            },
-            "patterns": [
-                {
-                    "include": "source.js"
-                },
-                {
-                    "include": "#interpolation"
                 }
             ]
         }

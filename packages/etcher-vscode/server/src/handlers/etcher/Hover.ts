@@ -1,6 +1,6 @@
 import { Hover, HoverParams, MarkupKind, TextDocuments } from 'vscode-languageserver';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { retrieveConfig } from '../config';
+import { retrieveConfig } from '../../config';
 
 import * as path from 'path';
 

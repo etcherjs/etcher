@@ -45,6 +45,38 @@ describe('Syntax-Tree Suite', () => {
             true
         );
     });
+    it('should parse computed attributes', () => {
+        const template = `<div #class={foo}></div>`;
+        const template1 = `<div class={foo}></div>`;
+
+        const parsedTemplate = compileToAST(template);
+        const parsedTemplate1 = compileToAST(template1);
+
+        equal(
+            parsedTemplate.ast.children[0].type === 'Element'
+                ? parsedTemplate.ast.children[0].attributes['#class'].isComputed
+                : false,
+            true
+        );
+        equal(
+            parsedTemplate1.ast.children[0].type === 'Element'
+                ? parsedTemplate1.ast.children[0].attributes['class'].isComputed
+                : false,
+            true
+        );
+    });
+    it('should escape computed expressions', () => {
+        const template = `<div #class={foo > 1 ? true : false}></div>`;
+
+        const parsedTemplate = compileToAST(template);
+
+        equal(
+            parsedTemplate.ast.children[0].type === 'Element'
+                ? parsedTemplate.ast.children[0].attributes['#class'].value
+                : false,
+            'foo&wsp;&gt;&wsp;1&wsp;?&wsp;true&wsp;:&wsp;false'
+        );
+    });
 });
 
 describe('Exported JS Suite', () => {

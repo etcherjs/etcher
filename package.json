@@ -5,7 +5,9 @@
     "author": "TheCommieAxolotl",
     "scripts": {
         "lint": "prettier --check .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "build": "turbo run build",
+        "test": "turbo run test"
     },
     "license": "MIT",
     "dependencies": {

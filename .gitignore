@@ -1,5 +1,4 @@
-# local testing
-test/
+.turbo
 
 # dependencies
 node_modules/
@@ -7,4 +6,5 @@ node_modules/
 # macOS files
 .DS_Store
 
+# logs
 **/.pnpm-debug.log

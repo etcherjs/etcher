@@ -33,7 +33,12 @@ export const insert = (id: string, node: Element, template: DocumentFragment, co
             typeof content === 'function' && (insertContent = content());
         } catch (e) {
             node.replaceWith(`{{${content}}}`);
-            return warn(`Error evaluating expression: `, e);
+            return warn(
+                `Error evaluating interpolated expression:\n\n{{${String(content).replace(
+                    '() => ',
+                    ''
+                )}}}\n  ${'^'.repeat(String(content).replace('() => ', '').length)}\n\n${e.message}`
+            );
         }
 
         Array.isArray(insertContent) && (insertContent = insertContent[0]);

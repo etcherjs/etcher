@@ -23,7 +23,7 @@ export const listen = (id: string, node: Element, callback: (event: Event) => vo
     }
 };
 
-export const insert = (id: string, node: Element, template: DocumentFragment, content: any) => {
+export const insert = (id: string, node: Element, template: DocumentFragment, content: any, dependencies?: any[]) => {
     try {
         if (!node) return;
 
@@ -36,9 +36,33 @@ export const insert = (id: string, node: Element, template: DocumentFragment, co
             return warn(`Error evaluating expression: `, e);
         }
 
-        typeof insertContent === 'undefined' && (insertContent = node.textContent);
-
         Array.isArray(insertContent) && (insertContent = insertContent[0]);
+
+        if (dependencies) {
+            for (let i = 0; i < dependencies.length; i++) {
+                const dependency = dependencies[i];
+
+                if (dependency) {
+                    if (dependency.$$$interval) {
+                        return;
+                    }
+
+                    const interval = () => {
+                        const newContent = content();
+
+                        if (newContent !== insertContent) {
+                            insert('ETCHER-DEPENDENCY', node, template, content);
+
+                            insertContent = newContent;
+                        }
+                    };
+
+                    dependency.$$$interval = window.setInterval(interval, 100);
+                }
+            }
+        }
+
+        if (typeof insertContent === 'undefined') return;
 
         node.replaceWith(insertContent);
     } catch (e) {

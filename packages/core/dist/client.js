@@ -26,7 +26,7 @@ const listen = (id, node, callback, event) => {
         renderError(id, e);
     }
 };
-const insert = (id, node, template, content) => {
+const insert = (id, node, template, content, dependencies) => {
     try {
         if (!node)
             return;
@@ -38,8 +38,27 @@ const insert = (id, node, template, content) => {
             node.replaceWith(`{{${content}}}`);
             return warn(`Error evaluating expression: `, e);
         }
-        typeof insertContent === 'undefined' && (insertContent = node.textContent);
         Array.isArray(insertContent) && (insertContent = insertContent[0]);
+        if (dependencies) {
+            for (let i = 0; i < dependencies.length; i++) {
+                const dependency = dependencies[i];
+                if (dependency) {
+                    if (dependency.$$$interval) {
+                        return;
+                    }
+                    const interval = () => {
+                        const newContent = content();
+                        if (newContent !== insertContent) {
+                            insert('ETCHER-DEPENDENCY', node, template, content);
+                            insertContent = newContent;
+                        }
+                    };
+                    dependency.$$$interval = window.setInterval(interval, 100);
+                }
+            }
+        }
+        if (typeof insertContent === 'undefined')
+            return;
         node.replaceWith(insertContent);
     }
     catch (e) {
@@ -87,18 +106,34 @@ const createSignal = (value) => {
 };
 
 class EtcherElement extends HTMLElement {
-    constructor(template) {
+    etcher_id;
+    constructor(template, etcher_id) {
         super();
+        this.etcher_id = etcher_id;
         const shadow = this.attachShadow({
             mode: 'open',
         });
         shadow.appendChild(template);
+        this.registerProps();
+    }
+    async registerProps() {
+        // NOTE: Not the best implementation, but works with the current system.
+        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.etcher_id}.js`);
+        for (let i = 0; i < this.attributes.length; i++) {
+            const attr = this.attributes[i];
+            Object.defineProperty(moduleExports.props, attr.name, {
+                get: () => attr.value,
+                set: (value) => {
+                    attr.value = value;
+                },
+            });
+        }
     }
 }
 const transform = (id, body) => {
     window.customElements.define(id, class extends EtcherElement {
         constructor() {
-            super(body);
+            super(body, id);
             window._$etcherCore.c[id] = this;
         }
     });

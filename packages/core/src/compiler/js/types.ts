@@ -1,6 +1,7 @@
 export type Statement =
     | Expression
     | Raw
+    | Export
     | CallExpression
     | Identifier
     | Literal
@@ -13,6 +14,11 @@ export type Expression = {
     type: 'Expression';
     value: Identifier | Literal | CallExpression | FunctionDeclaration | Raw;
     inline?: boolean;
+};
+
+export type Export = {
+    type: 'Export';
+    value: Statement;
 };
 
 export type Raw = {
@@ -222,6 +228,13 @@ export const functionDeclaration = (
         id,
         params,
         body,
+    };
+};
+
+export const exportStatement = (value: Statement): Export => {
+    return {
+        type: 'Export',
+        value,
     };
 };
 

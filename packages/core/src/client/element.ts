@@ -1,14 +1,37 @@
 import { wrappedEval } from './constructs';
 
 export default class EtcherElement extends HTMLElement {
-    constructor(template: DocumentFragment) {
+    etcher_id: string;
+
+    constructor(template: DocumentFragment, etcher_id: string) {
         super();
+
+        this.etcher_id = etcher_id;
 
         const shadow = this.attachShadow({
             mode: 'open',
         });
 
         shadow.appendChild(template);
+
+        this.registerProps();
+    }
+
+    async registerProps() {
+        // NOTE: Not the best implementation, but works with the current system.
+
+        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.etcher_id}.js`);
+
+        for (let i = 0; i < this.attributes.length; i++) {
+            const attr = this.attributes[i];
+
+            Object.defineProperty(moduleExports.props, attr.name, {
+                get: () => attr.value,
+                set: (value: any) => {
+                    attr.value = value;
+                },
+            });
+        }
     }
 }
 
@@ -17,7 +40,7 @@ export const transform = (id: string, body: DocumentFragment) => {
         id,
         class extends EtcherElement {
             constructor() {
-                super(body);
+                super(body, id);
 
                 window._$etcherCore.c[id] = this;
             }

@@ -5,11 +5,13 @@ import {
     identifier,
     literal,
     functionDeclaration,
+    exportStatement,
     Statement,
     objectLiteral,
     comment,
     lineBreak,
     raw as createRaw,
+    arrayLiteral,
 } from './js/types.js';
 import { htmlFrom, parseHTMLTemplate, reverseTransformVoid } from './template/index.js';
 import { createRoot, Node, RootNode, TextNode } from './template/types.js';
@@ -100,6 +102,10 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
     const GLOBAL_INSERT = unique('_$insert', existing || '');
 
     exprts.push(
+        exportStatement(
+            assignment(expression(identifier('props')), expression(objectLiteral([])), '=', { mode: 'constant' })
+        ),
+        lineBreak(),
         assignment(
             expression(
                 objectLiteral([
@@ -236,6 +242,8 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                                 )}`
                             )
                         ),
+                        node.expression.startsWith('props') &&
+                            expression(arrayLiteral([expression(identifier('props'))])),
                     ]),
                     lineBreak()
                 );
@@ -261,7 +269,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
         process(node, ast, [i]);
     }
 
-    exprts.push(createRaw(`export default () => ${GLOBAL_TRANSFORM}('${id}', ${templateId})`));
+    exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', ${templateId})`)));
 
     return jsFrom(exprts);
 };

@@ -74,6 +74,13 @@ export const jsFrom = (ast: Statement[]): string => {
                 code += name;
                 break;
             }
+            case 'Export': {
+                const { value } = node;
+
+                code += `export ${jsFrom([value])}`;
+
+                break;
+            }
             case 'Literal': {
                 const { value, subType } = node;
 
@@ -97,6 +104,26 @@ export const jsFrom = (ast: Statement[]): string => {
                         }
 
                         code += '}';
+                        break;
+                    }
+                    case 'Array': {
+                        code += '[';
+
+                        for (let j = 0; j < value.length; j++) {
+                            const item = value[j];
+
+                            code += `${jsFrom([item])}`;
+
+                            if (j < value.length - 1) {
+                                code += ', ';
+                            }
+                        }
+
+                        code += ']';
+                        break;
+                    }
+                    case 'Boolean': {
+                        code += value ? 'true' : 'false';
                         break;
                     }
                 }

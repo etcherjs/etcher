@@ -232,12 +232,6 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                 for (let j = 0; j < Object.keys(attrs).length; j++) {
                     const attr = Object.entries(attrs)[j];
 
-                    console.log(attr, attrs);
-
-                    console.log(attr[1] === '' && Object.keys(attr).length === 1);
-                    console.log(attr[1], '');
-                    console.log(Object.keys(attrs).length, 1);
-
                     if (attr[1] === '' && Object.keys(attrs).length === 1) {
                         attributes['default'] = {
                             default: true,

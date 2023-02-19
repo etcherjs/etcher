@@ -9,7 +9,7 @@ import {
     createText,
     createInterpolation,
 } from './types.js';
-import { parse, stringify } from 'html-parse-string';
+import { IDom, parse, stringify } from 'html-parse-string';
 import crypto from 'crypto';
 
 const VOID_TAGS = ['If', 'For', 'Loop'];
@@ -154,7 +154,8 @@ export const reverseTransformVoid = (template: string, whole = false): string =>
 };
 
 export const parseHTMLTemplate = (template: string): Node[] => {
-    const AST = parse(transformVoid(template));
+    const AST: IDom[] = parse(transformVoid(template));
+
     let oAST = [];
 
     for (let i = 0; i < AST.length; i++) {
@@ -183,7 +184,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                 break;
             }
             case 'tag': {
-                const { name, attrs, children } = node;
+                const { name, attrs, children, voidElement } = node;
 
                 let childNodes: Node[] = [];
                 let attributes: {
@@ -252,7 +253,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                     };
                 }
 
-                oAST.push(create(stringify([node]), name, attributes, false, ...childNodes));
+                oAST.push(create(stringify([node]), name, attributes, voidElement, ...childNodes));
             }
         }
     }
@@ -282,7 +283,7 @@ export const htmlFrom = (ast: Node[]): string => {
                 break;
             }
             case 'Element': {
-                let { tag, attributes, raw, children } = node;
+                let { tag, attributes, selfClosing, children } = node;
 
                 if (VOID_TAGS.includes(tag)) {
                     tag = `etcher-std-${tag}`;
@@ -304,7 +305,7 @@ export const htmlFrom = (ast: Node[]): string => {
                     html += ` ${attr.key}="${attr.value}"`;
                 }
 
-                html += `>${htmlFrom(children)}</${tag}>`;
+                html += selfClosing ? '/>' : `>${htmlFrom(children)}</${tag}>`;
 
                 break;
             }

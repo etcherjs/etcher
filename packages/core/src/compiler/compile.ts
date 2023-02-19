@@ -204,9 +204,8 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                             ]),
                             lineBreak()
                         );
-                    }
 
-                    if (attr.isComputed) {
+                        EVENT_COUNT++;
                     }
                 }
 

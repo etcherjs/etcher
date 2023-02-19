@@ -16,10 +16,6 @@ export const CHUNK_REGISTRY: Chunk[] = [];
 
 let id = 0;
 
-const escape = (str: string) => {
-    return str.replace(/`/g, '\\`').replace(/\${/g, '\\${');
-};
-
 export const processChunk = async (name: string, data: string) => {
     try {
         id++;
@@ -38,12 +34,6 @@ export const processChunk = async (name: string, data: string) => {
             hook: HOOK_TYPES.PROCESS_CHUNK,
             args: [chunk],
         });
-
-        if (PluginHookResult?.data) {
-            PluginHookResult.data = escape(PluginHookResult.data);
-        } else {
-            chunk.data = escape(chunk.data);
-        }
 
         CHUNK_REGISTRY.push(PluginHookResult || chunk);
 

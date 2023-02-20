@@ -183,6 +183,6 @@ export class STD_ELEMENT_IF extends HTMLElement {
             fragment.appendChild(clone);
         }
 
-        this.appendChild(fragment.cloneNode(true));
+        this.appendChild(fragment);
     }
 }

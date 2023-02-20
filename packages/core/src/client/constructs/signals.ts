@@ -6,7 +6,7 @@ export const wrappedEval = (code: string) => {
         return new Function('return ' + code)();
     } catch (e) {
         warn(`Error while evaluating expression: ${code}`);
-        return code;
+        return false;
     }
 };
 

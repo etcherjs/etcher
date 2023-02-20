@@ -84,7 +84,7 @@ const wrappedEval = (code) => {
     }
     catch (e) {
         warn(`Error while evaluating expression: ${code}`);
-        return code;
+        return false;
     }
 };
 const createSignal = (value) => {
@@ -232,7 +232,7 @@ class STD_ELEMENT_IF extends HTMLElement {
             const clone = document.importNode(content, true);
             fragment.appendChild(clone);
         }
-        this.appendChild(fragment.cloneNode(true));
+        this.appendChild(fragment);
     }
 }
 

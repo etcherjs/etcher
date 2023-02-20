@@ -45,25 +45,23 @@ export const insert = (id: string, node: Element, template: DocumentFragment, co
 
         if (dependencies) {
             for (let i = 0; i < dependencies.length; i++) {
-                const dependency = dependencies[i];
+                if (!dependencies[i]) dependencies[i] = {};
 
-                if (dependency) {
-                    if (dependency.$$$interval) {
-                        return;
-                    }
-
-                    const interval = () => {
-                        const newContent = content();
-
-                        if (newContent !== insertContent) {
-                            insert('ETCHER-DEPENDENCY', node, template, content);
-
-                            insertContent = newContent;
-                        }
-                    };
-
-                    dependency.$$$interval = window.setInterval(interval, 100);
+                if (dependencies[i].$$$interval) {
+                    return;
                 }
+
+                const interval = () => {
+                    const newContent = content();
+
+                    if (newContent !== insertContent) {
+                        insert('ETCHER-DEPENDENCY', node, template, content);
+
+                        insertContent = newContent;
+                    }
+                };
+
+                dependencies[i].$$$interval = window.setInterval(interval, 100);
             }
         }
 
@@ -88,5 +86,5 @@ export const renderError = (id: string, error: Error) => {
 
     const temp = template(id, markup);
 
-    transform(id, temp);
+    transform(id, () => temp);
 };

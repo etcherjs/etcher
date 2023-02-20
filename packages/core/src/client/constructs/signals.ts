@@ -1,7 +1,13 @@
 import { insert } from '../dom';
+import { warn } from '../log';
 
 export const wrappedEval = (code: string) => {
-    return new Function('return ' + code)();
+    try {
+        return new Function('return ' + code)();
+    } catch (e) {
+        warn(`Error while evaluating expression: ${code}`);
+        return code;
+    }
 };
 
 export const createSignal = <T>(value: T): [(node?: string) => T, (value: T) => void, (node: string) => void] => {

@@ -9,7 +9,7 @@ declare global {
             l: Record<string, any>;
 
             template: (id: string, body: string) => DocumentFragment;
-            transform: (id: string, body: DocumentFragment) => void;
+            transform: (id: string, body: () => DocumentFragment) => void;
             listen: (id: string, element: Element, callback: (event: Event) => void, event: string) => void;
             insert: (id: string, element: Element, template: DocumentFragment, content: () => any) => void;
 

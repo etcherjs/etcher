@@ -17,6 +17,7 @@ import { htmlFrom, parseHTMLTemplate, reverseTransformVoid } from './template/in
 import { createRoot, Node, RootNode, TextNode } from './template/types.js';
 import { walkFrom, walkKeyword } from './template/walker.js';
 import { jsFrom, unique } from './js/index.js';
+import { error } from '../util/logger.js';
 
 type CompilerOptions = {
     mode?: 'component' | 'page';
@@ -121,6 +122,8 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                 mode: 'constant',
             }
         ),
+        lineBreak(),
+        createRaw('const _component = (__index__) => {'),
         lineBreak()
     );
 
@@ -235,14 +238,13 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                         expression(identifier(templateId)),
                         expression(
                             createRaw(
-                                `() => ${node.expression.replace(
-                                    /\(\)$/,
-                                    `('_$etcherCore.c["${id}"]?.shadowRoot${walkKeyword(path)}')`
-                                )}`
+                                `() => ${node.expression
+                                    .replace(/\(\)$/, `('_$etcherCore.c["${id}"]?.shadowRoot${walkKeyword(path)}')`)
+                                    .replace(/^props\./, `props?.[__index__]?.`)}`
                             )
                         ),
                         node.expression.startsWith('props') &&
-                            expression(arrayLiteral([expression(identifier('props'))])),
+                            expression(arrayLiteral([expression(identifier('props[__index__]'))])),
                     ]),
                     lineBreak()
                 );
@@ -268,7 +270,9 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
         process(node, ast, [i]);
     }
 
-    exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', ${templateId})`)));
+    exprts.push(createRaw(`return ${templateId}`), lineBreak(), createRaw('}'), lineBreak());
+
+    exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', _component)`)));
 
     return jsFrom(exprts);
 };

@@ -11,6 +11,7 @@ import {
 } from './types.js';
 import { IDom, parse, stringify } from 'html-parse-string';
 import crypto from 'crypto';
+import { error } from '../../util/logger.js';
 
 const VOID_TAGS = ['If', 'For', 'Loop'];
 
@@ -190,7 +191,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                 let attributes: {
                     [key: string]: {
                         default?: boolean;
-                        key?: string;
+                        key: string;
                         value: string;
                         inline: boolean;
                         isComputed: boolean;
@@ -287,6 +288,23 @@ export const htmlFrom = (ast: Node[]): string => {
 
                 if (VOID_TAGS.includes(tag)) {
                     tag = `etcher-std-${tag}`;
+                }
+
+                if (tag === 'etcher-std-If') {
+                    const condition = attributes['#condition']?.value || attributes['default']?.value;
+
+                    if (!condition) {
+                        error(`Missing condition for <If>`);
+                        continue;
+                    }
+
+                    attributes['#condition'] = {
+                        value: `\${${reverseTransformVoid(condition, true)}}`,
+                        key: 'condition',
+                        isEventHandler: false,
+                        isComputed: false,
+                        inline: true,
+                    };
                 }
 
                 html += `<${tag}`;

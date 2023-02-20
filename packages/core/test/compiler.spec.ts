@@ -99,7 +99,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[2], "const temp$ = _$template('etcher-xxx', `<div></div>`)");
+        equal(output.split('\n')[3], "const temp$ = _$template('etcher-xxx', `<div></div>`)");
     });
     it('should export a transform call', () => {
         const template = `<div></div>`;
@@ -108,7 +108,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[3], "export default () => _$transform('etcher-xxx', temp$)");
+        equal(output.split('\n')[6], "export default () => _$transform('etcher-xxx', _component)");
     });
     it('should register event listeners', () => {
         const template = `<div @click={foo}></div>`;
@@ -117,7 +117,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[4], "_$listen('etcher-xxx', node$$0, foo, 'click')");
+        equal(output.split('\n')[5], "_$listen('etcher-xxx', node$$0, foo, 'click')");
     });
     it('should update interpolated expressions', () => {
         const template = `<div>{{foo}}</div>`;
@@ -126,8 +126,8 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[3], 'const node$0 = temp$.childNodes[0].childNodes[0]');
+        equal(output.split('\n')[4], 'const node$0 = temp$.childNodes[0].childNodes[0]');
 
-        equal(output.split('\n')[4], "_$insert('etcher-xxx', node$0, temp$, () => foo, )");
+        equal(output.split('\n')[5], "_$insert('etcher-xxx', node$0, temp$, () => foo, )");
     });
 });

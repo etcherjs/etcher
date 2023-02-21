@@ -107,6 +107,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
             assignment(expression(identifier('props')), expression(objectLiteral([])), '=', { mode: 'constant' })
         ),
         lineBreak(),
+        lineBreak(),
         assignment(
             expression(
                 objectLiteral([
@@ -123,7 +124,9 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
             }
         ),
         lineBreak(),
-        createRaw('const _component = (__index__) => {'),
+        lineBreak(),
+        createRaw('const __COMP__ = (__index__) => {'),
+        lineBreak(),
         lineBreak()
     );
 
@@ -147,6 +150,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                 mode: 'constant',
             }
         ),
+        lineBreak(),
         lineBreak()
     );
 
@@ -167,12 +171,12 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                         1,
                         0,
                         lineBreak(),
+                        lineBreak(),
                         comment(scriptComment),
                         lineBreak(),
                         createRaw(content.trim().replace(/^\s+/gm, '')),
                         lineBreak(),
-                        comment(`END${scriptComment}`),
-                        lineBreak()
+                        comment(`END${scriptComment}`)
                     );
                 }
 
@@ -272,7 +276,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
 
     exprts.push(createRaw(`return ${templateId}`), lineBreak(), createRaw('}'), lineBreak());
 
-    exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', _component)`)));
+    exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', __COMP__)`)));
 
     return jsFrom(exprts);
 };

@@ -84,15 +84,29 @@ export class STD_ELEMENT_FOR extends HTMLElement {
             const clone = document.importNode(content, true);
 
             const replaceNode = (node: Node) => {
-                if (node.textContent) {
-                    const text = node.textContent;
+                if (!node.textContent) return;
 
-                    if (text) {
-                        node.textContent = text.replace(
-                            new RegExp(`{{([^}]*?)(${this.__label})(.*?)}}`, 'gs'),
-                            this.__items[i]
-                        );
+                const text = node.textContent;
+
+                if (!text) return;
+
+                const regex = new RegExp(`{{(([^}]*?)(${this.__label})(.*?))}}`, 'gs');
+                let expression = regex.exec(text);
+
+                while (expression) {
+                    if (expression[1].startsWith('() => ')) {
+                        expression[1] = expression[1].replace('() => ', '');
                     }
+
+                    const res = wrappedEval(expression[1], {
+                        [this.__label || 'item']: this.__items[i],
+                    });
+
+                    if (res === undefined) return;
+
+                    node.textContent = text.replace(expression[0], res);
+
+                    expression = regex.exec(text);
                 }
             };
 
@@ -134,12 +148,31 @@ export class STD_ELEMENT_LOOP extends HTMLElement {
             const clone = document.importNode(content, true);
 
             const replaceNode = (node: Node) => {
-                if (node.textContent) {
-                    const text = node.textContent;
+                if (!node.textContent) return;
 
-                    if (text) {
-                        node.textContent = text.replace(new RegExp(`{{([^}]*index*?)}}`, 'gs'), i.toString());
+                const text = node.textContent;
+
+                if (!text) return;
+
+                const regex = new RegExp(`{{(([^}]*?)(index)(.*?))}}`, 'gs');
+                let expression = regex.exec(text);
+
+                while (expression) {
+                    console.log(expression, node);
+
+                    if (expression[1].startsWith('() => ')) {
+                        expression[1] = expression[1].replace('() => ', '');
                     }
+
+                    const res = wrappedEval(expression[1], {
+                        ['index']: i,
+                    });
+
+                    if (res === undefined) return;
+
+                    node.textContent = text.replace(expression[0], res);
+
+                    expression = regex.exec(text);
                 }
             };
 

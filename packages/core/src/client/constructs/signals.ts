@@ -1,9 +1,16 @@
 import { insert } from '../dom';
 import { warn } from '../log';
 
-export const wrappedEval = (code: string) => {
+export const wrappedEval = (
+    code: string,
+    params?: {
+        [key: string]: any;
+    }
+) => {
     try {
-        return new Function('return ' + code)();
+        const res = new Function(...Object.keys(params || {}), 'return ' + code)(...Object.values(params || {}));
+
+        return res;
     } catch (e) {
         warn(`Error while evaluating expression: ${code}`);
         return false;

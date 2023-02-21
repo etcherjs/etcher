@@ -5,7 +5,7 @@ const CONSTRUCTOR_INDEXES = new Map<string, number>();
 export default class EtcherElement extends HTMLElement {
     etcher_id: string;
 
-    constructor(template: (index: number) => DocumentFragment, etcher_id: string) {
+    constructor(template: (index: number, $: ShadowRoot) => DocumentFragment, etcher_id: string) {
         super();
 
         CONSTRUCTOR_INDEXES.set(etcher_id, (CONSTRUCTOR_INDEXES.get(etcher_id) || 0) + 1);
@@ -16,7 +16,7 @@ export default class EtcherElement extends HTMLElement {
             mode: 'open',
         });
 
-        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0));
+        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow));
 
         this.registerProps();
     }
@@ -43,7 +43,7 @@ export default class EtcherElement extends HTMLElement {
     }
 }
 
-export const transform = (id: string, body: () => DocumentFragment) => {
+export const transform = (id: string, body: (index: number, $: ShadowRoot) => DocumentFragment) => {
     window.customElements.define(
         id,
         class extends EtcherElement {
@@ -158,8 +158,6 @@ export class STD_ELEMENT_LOOP extends HTMLElement {
                 let expression = regex.exec(text);
 
                 while (expression) {
-                    console.log(expression, node);
-
                     if (expression[1].startsWith('() => ')) {
                         expression[1] = expression[1].replace('() => ', '');
                     }

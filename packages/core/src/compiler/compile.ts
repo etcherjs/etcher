@@ -125,7 +125,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
         ),
         lineBreak(),
         lineBreak(),
-        createRaw('const __COMP__ = (__index__) => {'),
+        createRaw('const __COMP__ = (__$index__, $) => {'),
         lineBreak(),
         lineBreak()
     );
@@ -168,7 +168,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                     const scriptComment = unique('SCRIPT_$', existing || '');
 
                     exprts.splice(
-                        1,
+                        8,
                         0,
                         lineBreak(),
                         lineBreak(),
@@ -244,11 +244,11 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                             createRaw(
                                 `() => ${node.expression
                                     .replace(/\(\)$/, `('_$etcherCore.c["${id}"]?.shadowRoot${walkKeyword(path)}')`)
-                                    .replace(/^props\./, `props?.[__index__]?.`)}`
+                                    .replace(/^props\./, `props?.[__$index__]?.`)}`
                             )
                         ),
                         node.expression.startsWith('props') &&
-                            expression(arrayLiteral([expression(identifier('props[__index__]'))])),
+                            expression(arrayLiteral([expression(identifier('props[__$index__]'))])),
                     ]),
                     lineBreak()
                 );

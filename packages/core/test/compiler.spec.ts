@@ -99,7 +99,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[4], "const __COMP__ = (__index__) => {");
+        equal(output.split('\n')[4], "const __COMP__ = (__$index__, $) => {");
     });
     it('should properly template html string', () => {
         const template = `<div></div>`;

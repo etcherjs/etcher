@@ -121,7 +121,7 @@ class EtcherElement extends HTMLElement {
         const shadow = this.attachShadow({
             mode: 'open',
         });
-        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0));
+        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow));
         this.registerProps();
     }
     async registerProps() {
@@ -221,7 +221,6 @@ class STD_ELEMENT_LOOP extends HTMLElement {
                 const regex = new RegExp(`{{(([^}]*?)(index)(.*?))}}`, 'gs');
                 let expression = regex.exec(text);
                 while (expression) {
-                    console.log(expression, node);
                     if (expression[1].startsWith('() => ')) {
                         expression[1] = expression[1].replace('() => ', '');
                     }

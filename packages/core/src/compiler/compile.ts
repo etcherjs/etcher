@@ -214,6 +214,46 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
 
                         EVENT_COUNT++;
                     }
+
+                    if (attr.isMuliLevel) {
+                        const path = walkFrom(ast.children, node);
+
+                        const nodeName = unique(`node$${INTERPOLATION_COUNT}`, existing || '');
+
+                        exprts.push(
+                            assignment(
+                                expression(identifier(nodeName)),
+                                expression(identifier(templateId + walkKeyword(path))),
+                                '=',
+                                {
+                                    mode: 'constant',
+                                }
+                            ),
+                            lineBreak()
+                        );
+
+                        exprts.push(
+                            callExpression(identifier(GLOBAL_INSERT), [
+                                expression(literal(id)),
+                                expression(identifier(nodeName)),
+                                expression(identifier(templateId)),
+                                expression(
+                                    createRaw(
+                                        `() => ${attr.value
+                                            .replace(
+                                                /\(\)$/,
+                                                `('_$etcherCore.c["${id}"]?.shadowRoot${walkKeyword(path)}')`
+                                            )
+                                            .replace(/^props\./, `props?.[__$index__]?.`)}`
+                                    )
+                                ),
+                                expression(literal(attr.key)),
+                            ]),
+                            lineBreak()
+                        );
+
+                        INTERPOLATION_COUNT++;
+                    }
                 }
 
                 break;

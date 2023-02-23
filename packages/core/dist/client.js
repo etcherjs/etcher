@@ -30,6 +30,7 @@ const insert = (id, node, template, content, dependencies) => {
     try {
         if (!node)
             return;
+        const addingAttribute = typeof dependencies === 'string';
         let insertContent = content;
         try {
             typeof content === 'function' && (insertContent = content());
@@ -39,7 +40,7 @@ const insert = (id, node, template, content, dependencies) => {
             return warn(`Error evaluating interpolated expression:\n\n{{${String(content).replace('() => ', '')}}}\n  ${'^'.repeat(String(content).replace('() => ', '').length)}\n\n${e.message}`);
         }
         Array.isArray(insertContent) && (insertContent = insertContent[0]);
-        if (dependencies) {
+        if (dependencies && !addingAttribute) {
             for (let i = 0; i < dependencies.length; i++) {
                 if (!dependencies[i])
                     dependencies[i] = {};
@@ -58,6 +59,27 @@ const insert = (id, node, template, content, dependencies) => {
         }
         if (typeof insertContent === 'undefined')
             return;
+        if (addingAttribute) {
+            let colonSeparated = [];
+            if (!(node instanceof HTMLElement))
+                return;
+            colonSeparated = dependencies.split(':');
+            if (colonSeparated.length > 1) {
+                switch (colonSeparated[0]) {
+                    case 'style': {
+                        node.style[colonSeparated[1]] = insertContent;
+                        break;
+                    }
+                    default: {
+                        error(`Unknown attribute type: ${colonSeparated[0]}`);
+                        break;
+                    }
+                }
+                return;
+            }
+            node.setAttribute(dependencies, insertContent);
+            return;
+        }
         node.replaceWith(insertContent);
     }
     catch (e) {

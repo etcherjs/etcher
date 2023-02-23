@@ -196,6 +196,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                         inline: boolean;
                         isComputed: boolean;
                         isEventHandler: boolean;
+                        isMuliLevel: boolean;
                     };
                 } = {};
 
@@ -234,6 +235,8 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                 for (let j = 0; j < Object.keys(attrs).length; j++) {
                     const attr = Object.entries(attrs)[j];
 
+                    const isMuliLevel = attr[0].includes(':');
+
                     if (attr[1] === '' && Object.keys(attrs).length === 1) {
                         attributes['default'] = {
                             default: true,
@@ -242,6 +245,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                             inline: attr[1].startsWith('"') && attr[1].endsWith('"'),
                             isComputed: (attr[1].startsWith('{') && attr[1].endsWith('}')) || attr[0].startsWith('#'),
                             isEventHandler: attr[0].startsWith('@'),
+                            isMuliLevel,
                         };
                     }
 
@@ -251,6 +255,7 @@ export const parseHTMLTemplate = (template: string): Node[] => {
                         inline: attr[1].startsWith('"') && attr[1].endsWith('"'),
                         isComputed: (attr[1].startsWith('{') && attr[1].endsWith('}')) || attr[0].startsWith('#'),
                         isEventHandler: attr[0].startsWith('@'),
+                        isMuliLevel,
                     };
                 }
 
@@ -299,11 +304,12 @@ export const htmlFrom = (ast: Node[]): string => {
                     }
 
                     attributes['#condition'] = {
-                        value: `\${${reverseTransformVoid(condition, true)}}`,
                         key: 'condition',
-                        isEventHandler: false,
-                        isComputed: false,
+                        value: `\${${reverseTransformVoid(condition, true)}}`,
                         inline: true,
+                        isComputed: false,
+                        isEventHandler: false,
+                        isMuliLevel: false,
                     };
                 }
 
@@ -317,6 +323,10 @@ export const htmlFrom = (ast: Node[]): string => {
                         html += ` ${attr.key}="${JSON.stringify(reverseTransformVoid(attr.value, true))
                             .replaceAll('"', "'")
                             .replace(/^'|'$/g, '')}"`;
+                        continue;
+                    }
+                    if (attr.isMuliLevel) {
+                        // html += ` ${attr.key}=""`;
                         continue;
                     }
 

@@ -23,9 +23,17 @@ export const listen = (id: string, node: Element, callback: (event: Event) => vo
     }
 };
 
-export const insert = (id: string, node: Element, template: DocumentFragment, content: any, dependencies?: any[]) => {
+export const insert = (
+    id: string,
+    node: Element,
+    template: DocumentFragment,
+    content: any,
+    dependencies?: any[] | string
+) => {
     try {
         if (!node) return;
+
+        const addingAttribute = typeof dependencies === 'string';
 
         let insertContent = content;
 
@@ -43,7 +51,7 @@ export const insert = (id: string, node: Element, template: DocumentFragment, co
 
         Array.isArray(insertContent) && (insertContent = insertContent[0]);
 
-        if (dependencies) {
+        if (dependencies && !addingAttribute) {
             for (let i = 0; i < dependencies.length; i++) {
                 if (!dependencies[i]) dependencies[i] = {};
 
@@ -66,6 +74,33 @@ export const insert = (id: string, node: Element, template: DocumentFragment, co
         }
 
         if (typeof insertContent === 'undefined') return;
+
+        if (addingAttribute) {
+            let colonSeparated = [];
+
+            if (!(node instanceof HTMLElement)) return;
+
+            colonSeparated = dependencies.split(':');
+
+            if (colonSeparated.length > 1) {
+                switch (colonSeparated[0]) {
+                    case 'style': {
+                        node.style[colonSeparated[1]] = insertContent;
+                        break;
+                    }
+                    default: {
+                        error(`Unknown attribute type: ${colonSeparated[0]}`);
+                        break;
+                    }
+                }
+
+                return;
+            }
+
+            node.setAttribute(dependencies, insertContent);
+
+            return;
+        }
 
         node.replaceWith(insertContent);
     } catch (e) {

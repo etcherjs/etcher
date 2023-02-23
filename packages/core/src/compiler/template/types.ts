@@ -27,6 +27,7 @@ export type ElementNode = {
             inline: boolean;
             isComputed: boolean;
             isEventHandler: boolean;
+            isMuliLevel: boolean;
         };
     };
     selfClosing: boolean;
@@ -80,6 +81,7 @@ export const create = (
             inline: boolean;
             isComputed: boolean;
             isEventHandler: boolean;
+            isMuliLevel: boolean;
         };
     },
     selfClosing: boolean,

@@ -17,7 +17,7 @@
             "import": "./src/compiler/index.ts"
         },
         "./client": {
-            "import": "./src/client/index.ts"
+            "import": "./dist/client.js"
         }
     },
     "scripts": {

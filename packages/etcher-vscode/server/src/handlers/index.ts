@@ -72,8 +72,6 @@ export default {
 
         const inStyle = isWithinTag(document, textDocumentPosition.position, 'style');
 
-        console.log('inStyle', inStyle);
-
         if (inStyle) return css || [];
 
         return etcher || [];

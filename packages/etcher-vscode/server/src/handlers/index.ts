@@ -32,16 +32,7 @@ export default {
         const etcher = Etcher.Hover(documents, params);
         const css = Css.Hover(documents, params);
 
-        const document = documents.get(params.textDocument.uri);
-
-        if (!document) return;
-
-        const inStyle = isWithinTag(document, params.position, 'style');
-
         if (etcher) return etcher;
-
-        if (!inStyle) return;
-
         if (css) return css;
     },
     Validate: (settings: Settings, connection: Connection, document: TextDocument) => {
@@ -81,9 +72,11 @@ export default {
 
         const inStyle = isWithinTag(document, textDocumentPosition.position, 'style');
 
+        console.log('inStyle', inStyle);
+
         if (inStyle) return css || [];
 
-        return [...(etcher || []), ...(css || [])];
+        return etcher || [];
     },
     CompletionResolve: (documents: TextDocuments<TextDocument>, item: CompletionItem): CompletionItem => {
         const etcher = Etcher.CompletionResolve(documents, item);

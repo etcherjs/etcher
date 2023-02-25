@@ -3,6 +3,7 @@ import {
     Connection,
     HoverParams,
     Location,
+    Position,
     TextDocumentPositionParams,
     TextDocuments,
 } from 'vscode-languageserver';
@@ -12,12 +13,35 @@ import { Settings } from '../constants';
 import Etcher from './etcher';
 import Css from './css';
 
+const isWithinTag = (document: TextDocument, position: Position, tag: string) => {
+    const before = document.getText().substring(0, document.offsetAt(position));
+    const after = document.getText().substring(document.offsetAt(position));
+
+    const openIndex = before.lastIndexOf(`<${tag}`);
+    const closeIndex = after.indexOf(`</${tag}>`);
+
+    if (openIndex === -1 || closeIndex === -1) return false;
+
+    if (closeIndex > openIndex) return false;
+
+    return true;
+};
+
 export default {
     Hover: (documents: TextDocuments<TextDocument>, params: HoverParams) => {
         const etcher = Etcher.Hover(documents, params);
         const css = Css.Hover(documents, params);
 
+        const document = documents.get(params.textDocument.uri);
+
+        if (!document) return;
+
+        const inStyle = isWithinTag(document, params.position, 'style');
+
         if (etcher) return etcher;
+
+        if (!inStyle) return;
+
         if (css) return css;
     },
     Validate: (settings: Settings, connection: Connection, document: TextDocument) => {
@@ -31,7 +55,15 @@ export default {
         const etcher = Etcher.Definition(documents, params);
         const css = Css.Definition(documents, params);
 
+        const document = documents.get(params.textDocument.uri);
+
+        if (!document) return [];
+
+        const inStyle = isWithinTag(document, params.position, 'style');
+
         if (!etcher && !css) return [];
+
+        if (!inStyle) return etcher || [];
 
         return [...(etcher || []), ...(css || [])];
     },
@@ -42,6 +74,14 @@ export default {
     ): CompletionItem[] => {
         const etcher = Etcher.Completion(settings, documents, textDocumentPosition);
         const css = Css.Completion(settings, documents, textDocumentPosition);
+
+        const document = documents.get(textDocumentPosition.textDocument.uri);
+
+        if (!document) return [];
+
+        const inStyle = isWithinTag(document, textDocumentPosition.position, 'style');
+
+        if (inStyle) return css || [];
 
         return [...(etcher || []), ...(css || [])];
     },

@@ -134,11 +134,20 @@ export default {
 
         if (!cssLanguageServiceResult && !lessLanguageServiceResult && !scssLanguageServiceResult) return [];
 
-        return [
-            ...(cssLanguageServiceResult?.items || []),
-            ...(lessLanguageServiceResult?.items || []),
-            ...(scssLanguageServiceResult?.items || []),
-        ];
+        const items = [
+            ...(cssLanguageServiceResult ? cssLanguageServiceResult.items : []),
+            ...(lessLanguageServiceResult ? lessLanguageServiceResult.items : []),
+            ...(scssLanguageServiceResult ? scssLanguageServiceResult.items : []),
+        ].reduce((acc, current) => {
+            const x = acc.find((item) => item.label === current.label);
+            if (!x) {
+                return acc.concat([current]);
+            } else {
+                return acc;
+            }
+        }, [] as CompletionItem[]);
+
+        return items;
     },
     CompletionResolve: (documents: TextDocuments<TextDocument>, item: CompletionItem): CompletionItem => {
         return item;

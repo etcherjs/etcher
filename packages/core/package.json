@@ -12,6 +12,12 @@
     "exports": {
         ".": {
             "import": "./dist/modetcher.js"
+        },
+        "./compiler": {
+            "import": "./src/compiler/index.ts"
+        },
+        "./client": {
+            "import": "./src/client/index.ts"
         }
     },
     "scripts": {

@@ -1,6 +1,10 @@
 import { transform } from './element';
 import { error, warn } from './log';
 
+export const onMount = (callback: () => void) => {
+    return callback;
+};
+
 export const template = (id: string, body: string): DocumentFragment => {
     try {
         const template = document.createElement('template');

@@ -1,5 +1,5 @@
 import EtcherElement, { STD_ELEMENT_FOR, STD_ELEMENT_IF, STD_ELEMENT_LOOP, transform } from './element';
-import { template, listen, insert } from './dom';
+import { template, listen, insert, onMount } from './dom';
 import { createSignal } from './constructs';
 
 declare global {
@@ -9,7 +9,11 @@ declare global {
             l: Record<string, any>;
 
             template: (id: string, body: string) => DocumentFragment;
-            transform: (id: string, body: () => DocumentFragment) => void;
+            transform: (
+                id: string,
+                body: () => [DocumentFragment, ...(($: ShadowRoot) => void)[]],
+                ...mountCallbacks: (() => void)[]
+            ) => void;
             listen: (id: string, element: Element, callback: (event: Event) => void, event: string) => void;
             insert: (id: string, element: Element, template: DocumentFragment, content: () => any) => void;
 
@@ -19,6 +23,7 @@ declare global {
         };
         etcher: {
             createSignal: typeof createSignal;
+            onMount: typeof onMount;
         };
     }
 }
@@ -39,6 +44,7 @@ window._$etcherCore = {
 
 window.etcher = {
     createSignal,
+    onMount,
 };
 
 window.customElements.define('etcher-std-if', STD_ELEMENT_IF);

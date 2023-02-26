@@ -101,6 +101,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
     const GLOBAL_TEMPLATE = unique('_$template', existing || '');
     const GLOBAL_LISTEN = unique('_$listen', existing || '');
     const GLOBAL_INSERT = unique('_$insert', existing || '');
+    const GLOBAL_MOUNT = unique('_$on_mount', existing || '');
 
     exprts.push(
         exportStatement(
@@ -118,6 +119,15 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                 ])
             ),
             expression(identifier('_$etcherCore')),
+            '=',
+            {
+                mode: 'constant',
+            }
+        ),
+        lineBreak(),
+        assignment(
+            expression(objectLiteral([identifier(`onMount: ${GLOBAL_MOUNT}`)])),
+            expression(identifier('etcher')),
             '=',
             {
                 mode: 'constant',
@@ -156,6 +166,7 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
 
     let INTERPOLATION_COUNT = 0;
     let EVENT_COUNT = 0;
+    let mountCallbacks: string[] = [];
 
     const process = (node: Node, parent: Node, path: number[]) => {
         switch (node.type) {
@@ -163,21 +174,38 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
                 const { tag, attributes, children } = node;
 
                 if (tag === 'script') {
-                    const content = reverseTransformVoid(children.map((c: TextNode) => c.data).join('\n'), true);
+                    const rawContent = reverseTransformVoid(children.map((c: TextNode) => c.data).join('\n'), true)
+                        .trim()
+                        .replace(/^\s+/gm, '');
+
+                    const mountId = unique('mount$', existing);
+
+                    const mountFunction = rawContent.match(/onMount\(.*?\(.*?\).*}.*?\)/gs);
 
                     const scriptComment = unique('SCRIPT_$', existing || '');
 
                     exprts.splice(
-                        8,
+                        exprts.length - 4,
                         0,
-                        lineBreak(),
-                        lineBreak(),
                         comment(scriptComment),
                         lineBreak(),
-                        createRaw(content.trim().replace(/^\s+/gm, '')),
+                        createRaw(rawContent),
                         lineBreak(),
-                        comment(`END${scriptComment}`)
+                        comment(`END${scriptComment}`),
+                        lineBreak()
                     );
+
+                    if (mountFunction) {
+                        mountCallbacks.push(mountId);
+
+                        rawContent.replace(mountFunction[0], '');
+                        exprts.splice(
+                            exprts.length - 4,
+                            0,
+                            createRaw(`const ${mountId} = /**/${mountFunction[0].replace('onMount', GLOBAL_MOUNT)}`),
+                            lineBreak()
+                        );
+                    }
                 }
 
                 for (let j = 0; j < Object.keys(attributes).length; j++) {
@@ -314,7 +342,13 @@ export const getExported = (id: string, ast: RootNode, existing?: string): strin
         process(node, ast, [i]);
     }
 
-    exprts.push(createRaw(`return ${templateId}`), lineBreak(), createRaw('}'), lineBreak());
+    exprts.push(
+        lineBreak(),
+        createRaw(`return [${templateId}, ${mountCallbacks.join(',')}]`),
+        lineBreak(),
+        createRaw('}'),
+        lineBreak()
+    );
 
     exprts.push(exportStatement(createRaw(`default () => ${GLOBAL_TRANSFORM}('${id}', __COMP__)`)));
 

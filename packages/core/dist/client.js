@@ -5,6 +5,9 @@ const warn = (...message) => {
     console.warn('%cetcher:%c', 'color: hsl(40, 89%, 72%); font-weight: 600', '', ...message);
 };
 
+const onMount = (callback) => {
+    return callback;
+};
 const template = (id, body) => {
     try {
         const template = document.createElement('template');
@@ -135,21 +138,24 @@ const createSignal = (value) => {
 
 const CONSTRUCTOR_INDEXES = new Map();
 class EtcherElement extends HTMLElement {
-    etcher_id;
+    __etcher_id;
+    __callbacks;
     constructor(template, etcher_id) {
         super();
         CONSTRUCTOR_INDEXES.set(etcher_id, (CONSTRUCTOR_INDEXES.get(etcher_id) || 0) + 1);
-        this.etcher_id = etcher_id;
+        this.__etcher_id = etcher_id;
         const shadow = this.attachShadow({
             mode: 'open',
         });
-        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow));
+        const [fragment, ...callbacks] = template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow);
+        this.__callbacks = callbacks;
+        shadow.appendChild(fragment);
         this.registerProps();
     }
     async registerProps() {
         // NOTE: Not the best implementation, but works with the current system.
-        const index = CONSTRUCTOR_INDEXES.get(this.etcher_id);
-        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.etcher_id}.js`);
+        const index = CONSTRUCTOR_INDEXES.get(this.__etcher_id);
+        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.__etcher_id}.js`);
         for (let i = 0; i < this.attributes.length; i++) {
             const attr = this.attributes[i];
             if (!moduleExports.props[index])
@@ -160,6 +166,11 @@ class EtcherElement extends HTMLElement {
                     attr.value = value;
                 },
             });
+        }
+    }
+    connectedCallback() {
+        for (let i = 0; i < this.__callbacks.length; i++) {
+            this.__callbacks[i](this.shadowRoot);
         }
     }
 }
@@ -298,6 +309,7 @@ window._$etcherCore = {
 };
 window.etcher = {
     createSignal,
+    onMount,
 };
 window.customElements.define('etcher-std-if', STD_ELEMENT_IF);
 window.customElements.define('etcher-std-for', STD_ELEMENT_FOR);

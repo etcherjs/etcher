@@ -3,20 +3,28 @@ import { wrappedEval } from './constructs';
 const CONSTRUCTOR_INDEXES = new Map<string, number>();
 
 export default class EtcherElement extends HTMLElement {
-    etcher_id: string;
+    __etcher_id: string;
+    __callbacks: (($: ShadowRoot) => void)[];
 
-    constructor(template: (index: number, $: ShadowRoot) => DocumentFragment, etcher_id: string) {
+    constructor(
+        template: (index: number, $: ShadowRoot) => [DocumentFragment, ...(($: ShadowRoot) => void)[]],
+        etcher_id: string
+    ) {
         super();
 
         CONSTRUCTOR_INDEXES.set(etcher_id, (CONSTRUCTOR_INDEXES.get(etcher_id) || 0) + 1);
 
-        this.etcher_id = etcher_id;
+        this.__etcher_id = etcher_id;
 
         const shadow = this.attachShadow({
             mode: 'open',
         });
 
-        shadow.appendChild(template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow));
+        const [fragment, ...callbacks] = template(CONSTRUCTOR_INDEXES.get(etcher_id) || 0, shadow);
+
+        this.__callbacks = callbacks;
+
+        shadow.appendChild(fragment);
 
         this.registerProps();
     }
@@ -24,9 +32,9 @@ export default class EtcherElement extends HTMLElement {
     async registerProps() {
         // NOTE: Not the best implementation, but works with the current system.
 
-        const index = CONSTRUCTOR_INDEXES.get(this.etcher_id);
+        const index = CONSTRUCTOR_INDEXES.get(this.__etcher_id);
 
-        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.etcher_id}.js`);
+        const moduleExports = await import(/* @vite-ignore */ `/@etcher/${this.__etcher_id}.js`);
 
         for (let i = 0; i < this.attributes.length; i++) {
             const attr = this.attributes[i];
@@ -41,9 +49,18 @@ export default class EtcherElement extends HTMLElement {
             });
         }
     }
+
+    connectedCallback() {
+        for (let i = 0; i < this.__callbacks.length; i++) {
+            this.__callbacks[i](this.shadowRoot);
+        }
+    }
 }
 
-export const transform = (id: string, body: (index: number, $: ShadowRoot) => DocumentFragment) => {
+export const transform = (
+    id: string,
+    body: (index: number, $: ShadowRoot) => [DocumentFragment, ...(($: ShadowRoot) => void)[]]
+) => {
     window.customElements.define(
         id,
         class extends EtcherElement {

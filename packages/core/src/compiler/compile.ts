@@ -93,8 +93,23 @@ export const compileToAST = (template: string, options?: CompilerOptions): Codeg
 export const getExported = (id: string, ast: RootNode, existing?: string): string => {
     let exprts: Statement[] = [];
 
-    const raw = reverseTransformVoid(
-        htmlFrom(ast.children.map((n: Node) => (n.type === 'Element' && n.tag !== 'script' ? n : null)))
+    const escape = (str: string) => {
+        let res: string;
+
+        res = str.replace(/\n/g, '\\n');
+        res = res.replace(/\r/g, '\\r');
+        res = res.replace(/`/g, '\\`');
+        res = res.replace(/${/g, '\\${');
+
+        res = res.replace(/\&rev\;/g, '$');
+
+        return res;
+    };
+
+    const raw = escape(
+        reverseTransformVoid(
+            htmlFrom(ast.children.map((n: Node) => (n.type === 'Element' && n.tag !== 'script' ? n : null)))
+        )
     );
 
     const GLOBAL_TRANSFORM = unique('_$transform', existing || '');

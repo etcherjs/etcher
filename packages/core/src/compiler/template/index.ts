@@ -305,7 +305,7 @@ export const htmlFrom = (ast: Node[]): string => {
 
                     attributes['#condition'] = {
                         key: 'condition',
-                        value: `\${${reverseTransformVoid(condition, true)}}`,
+                        value: `&rev;{${reverseTransformVoid(condition, true)}}`,
                         inline: true,
                         isComputed: false,
                         isEventHandler: false,

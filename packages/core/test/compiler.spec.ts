@@ -99,7 +99,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[4], "const __COMP__ = (__$index__, $) => {");
+        equal(output.split('\n')[5], "const __COMP__ = (__$index__, $) => {");
     });
     it('should properly template html string', () => {
         const template = `<div></div>`;
@@ -108,7 +108,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[6], "const temp$ = _$template('etcher-xxx', `<div></div>`)");
+        equal(output.split('\n')[7], "const temp$ = _$template('etcher-xxx', `<div></div>`)");
     });
     it('should export a transform call', () => {
         const template = `<div></div>`;
@@ -117,7 +117,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[10], "export default () => _$transform('etcher-xxx', __COMP__)");
+        equal(output.split('\n')[12], "export default () => _$transform('etcher-xxx', __COMP__)");
     });
     it('should register event listeners', () => {
         const template = `<div @click={foo}></div>`;
@@ -126,7 +126,7 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[9], "_$listen('etcher-xxx', node$$0, foo, 'click')");
+        equal(output.split('\n')[10], "_$listen('etcher-xxx', node$$0, foo, 'click')");
     });
     it('should update interpolated expressions', () => {
         const template = `<div>{{foo}}</div>`;
@@ -135,8 +135,8 @@ describe('Exported JS Suite', () => {
 
         const output = getExported('etcher-xxx', parsedTemplate.ast);
 
-        equal(output.split('\n')[8], 'const node$0 = temp$.childNodes[0].childNodes[0]');
+        equal(output.split('\n')[9], 'const node$0 = temp$.childNodes[0].childNodes[0]');
 
-        equal(output.split('\n')[9], "_$insert('etcher-xxx', node$0, temp$, () => foo, )");
+        equal(output.split('\n')[10], "_$insert('etcher-xxx', node$0, temp$, () => foo, )");
     });
 });

@@ -118,7 +118,11 @@ export const migratePages = async () => {
                     fileData.replace(
                         '</body>',
                         `<script type="module">${(
-                            await minify(clientJS)
+                            await minify(clientJS, {
+                                output: {
+                                    comments: true,
+                                },
+                            })
                         ).code.trim()}\n\n//# sourceURL=client.js</script></body>`
                     )
                 );

@@ -100,7 +100,7 @@ const renderError = (id, error) => {
         </div>
         </div>`;
     const temp = template(id, markup);
-    transform(id, () => temp);
+    transform(id, () => [temp]);
 };
 
 const wrappedEval = (code, params) => {

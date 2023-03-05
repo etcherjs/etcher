@@ -125,5 +125,5 @@ export const renderError = (id: string, error: Error) => {
 
     const temp = template(id, markup);
 
-    transform(id, () => temp);
+    transform(id, () => [temp]);
 };

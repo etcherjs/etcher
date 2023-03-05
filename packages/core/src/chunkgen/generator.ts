@@ -1,11 +1,12 @@
+import { getExported, compileToAST } from '../compiler';
 import { Chunk } from '../types';
 
 export const generateChunkFunction = (chunk: Chunk): string => {
-    return `export default function ${chunk.name.replace(/\W/g, '_')}() {
-    window.etcher.transform(\`${chunk.data.replaceAll('\n', '\\n')}\`, '${chunk.chunkName}');
-}
-    
-//# sourceURL=${chunk.name}.xtml`;
+    const parsed = compileToAST(chunk.data);
+
+    const exportJS = getExported(chunk.chunkName, parsed.ast, parsed.findTextContent('script').join('\n'));
+
+    return `${exportJS}\n\n//# sourceURL=${chunk.name}.xtml`;
 };
 
 export const generateChunkImport = (chunk: Chunk): string => {

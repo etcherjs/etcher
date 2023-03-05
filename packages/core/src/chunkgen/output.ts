@@ -19,7 +19,7 @@ export const generateCoreFile = async (shouldLog: boolean = true) => {
         const config = await getConfig();
 
         if (!fs.existsSync(config.input)) {
-            throw new Error('Source directory does not exist!');
+            return error("Input directory doesn't exist! Please create it and try again.");
         }
 
         const componentFiles = await fs.promises.readdir(path.join(config.input, 'components'));
@@ -117,9 +117,13 @@ export const migratePages = async () => {
                 fileData = parseFile(
                     fileData.replace(
                         '</body>',
-                        `<script type="module">${
-                            (await minify(clientJS)).code
-                        }\n\n//# sourceURL=client.js</script></body>`
+                        `<script type="module">${(
+                            await minify(clientJS, {
+                                output: {
+                                    comments: true,
+                                },
+                            })
+                        ).code.trim()}\n\n//# sourceURL=client.js</script></body>`
                     )
                 );
 
@@ -217,7 +221,7 @@ export const watch = async () => {
     });
 
     if (!fs.existsSync(config.input)) {
-        throw new Error('Source directory does not exist!');
+        return error("Input directory doesn't exist! Please create it and try again.");
     }
 
     fs.watch(path.join(config.input, 'components'), async () => {

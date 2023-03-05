@@ -1,11 +1,11 @@
 import { Connection, Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
-import { retrieveConfig } from '../config';
+import { retrieveConfig } from '../../config';
 
 import * as path from 'path';
 import * as fs from 'fs';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-export async function validateXTMLDocument(
+export default async function validateXTMLDocument(
     settings: {
         lint: boolean;
     },

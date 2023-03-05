@@ -29,8 +29,9 @@ Etcher allows you to take advantage of custom elements, a feature [natively supp
 Ethcer's custom web elements have
 
 -   CSS Scoping through the Shadow DOM
--   Reusability
 -   Event handling
+-   Reusability
+-   Reactivity
 
 and much more.
 
@@ -99,5 +100,5 @@ export default {
 
 ```html
 <!-- src/components/Button.xtml -->
-<button>{{label}}</button>
+<button>{{props.label}}</button>
 ```

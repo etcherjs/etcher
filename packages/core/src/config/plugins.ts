@@ -1,8 +1,8 @@
 import type { Chunk, ExternalPluginOptions, PluginHookParams } from '../types';
 
+import { HOOK_TYPES } from '../constants';
 import { getConfig } from '.';
 import chalk from 'chalk';
-import { HOOK_TYPES } from '../constants';
 
 const Plugins: ExternalPluginOptions[] = [];
 

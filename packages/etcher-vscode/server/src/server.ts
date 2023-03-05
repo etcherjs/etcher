@@ -13,11 +13,8 @@ import {
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
-import { CompletionHandler, CompletionResolveHandler } from './handlers/Completion';
-import { validateXTMLDocument } from './handlers/Validate';
-import DefinitionHandler from './handlers/Definition';
-import HoverHandler from './handlers/Hover';
 import { Settings } from './constants';
+import Handlers from './handlers';
 
 const connection = createConnection(ProposedFeatures.all);
 
@@ -25,18 +22,12 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
-let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
     const capabilities = params.capabilities;
 
     hasConfigurationCapability = !!(capabilities.workspace && !!capabilities.workspace.configuration);
     hasWorkspaceFolderCapability = !!(capabilities.workspace && !!capabilities.workspace.workspaceFolders);
-    hasDiagnosticRelatedInformationCapability = !!(
-        capabilities.textDocument &&
-        capabilities.textDocument.publishDiagnostics &&
-        capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
 
     const result: InitializeResult = {
         capabilities: {
@@ -76,7 +67,7 @@ connection.onDidChangeConfiguration((change) => {
         globalSettings = <Settings>(change.settings.languageServerExample || defaultSettings);
     }
 
-    documents.all().forEach((d) => validateXTMLDocument(globalSettings, connection, d));
+    documents.all().forEach((d) => Handlers.Validate(globalSettings, connection, d));
 });
 
 function getDocumentSettings(resource: string): Thenable<Settings> {
@@ -99,25 +90,23 @@ documents.onDidClose((e) => {
 });
 
 documents.onDidChangeContent(async (change) => {
-    validateXTMLDocument(await getDocumentSettings(change.document.uri), connection, change.document);
+    Handlers.Validate(await getDocumentSettings(change.document.uri), connection, change.document);
 });
 
 connection.onDefinition((params) => {
-    return DefinitionHandler(documents, params);
+    return Handlers.Definition(documents, params);
 });
 
 connection.onHover((params: HoverParams) => {
-    return HoverHandler(documents, params);
+    return Handlers.Hover(documents, params);
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    const items = CompletionHandler(globalSettings, documents, textDocumentPosition);
-
-    return items;
+    return Handlers.Completion(globalSettings, documents, textDocumentPosition);
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
-    return CompletionResolveHandler(documents, item);
+    return Handlers.CompletionResolve(documents, item);
 });
 
 documents.listen(connection);

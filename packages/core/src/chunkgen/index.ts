@@ -16,15 +16,11 @@ export const CHUNK_REGISTRY: Chunk[] = [];
 
 let id = 0;
 
-const escape = (str: string) => {
-    return str.replace(/`/g, '\\`').replace(/\${/g, '\\${');
-};
-
 export const processChunk = async (name: string, data: string) => {
     try {
         id++;
 
-        const suffix = crypto.randomBytes(4).toString('hex');
+        const suffix = crypto.createHash('SHA256').update(name).digest('hex').slice(0, 8);
         const chunkName = `etcher-${suffix}`;
 
         const chunk: Chunk = {
@@ -38,12 +34,6 @@ export const processChunk = async (name: string, data: string) => {
             hook: HOOK_TYPES.PROCESS_CHUNK,
             args: [chunk],
         });
-
-        if (PluginHookResult?.data) {
-            PluginHookResult.data = escape(PluginHookResult.data);
-        } else {
-            chunk.data = escape(chunk.data);
-        }
 
         CHUNK_REGISTRY.push(PluginHookResult || chunk);
 

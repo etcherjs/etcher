@@ -6,7 +6,6 @@ declare global {
     interface Window {
         _$etcherCore: {
             c: Record<string, any>;
-            l: Record<string, any>;
 
             template: (id: string, body: string) => DocumentFragment;
             transform: (
@@ -30,7 +29,6 @@ declare global {
 
 window._$etcherCore = {
     c: {},
-    l: {},
 
     transform,
     template,

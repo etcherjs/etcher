@@ -298,7 +298,6 @@ class STD_ELEMENT_IF extends HTMLElement {
 
 window._$etcherCore = {
     c: {},
-    l: {},
     transform,
     template,
     listen,
